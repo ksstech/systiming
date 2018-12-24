@@ -32,9 +32,8 @@
 #include	"FreeRTOS_Support.h"
 #include	<string.h>
 
-// ######################################## DEBUG macros ###########################################
-
 #define	debugFLAG					0x0000
+
 #define	debugPARAM					(debugFLAG & 0x0001)
 
 // ################################# Code execution timer support ##################################
