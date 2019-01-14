@@ -177,10 +177,10 @@ void	vClockTimerReset(uint8_t TimerMask) {
 		if (TimerMask & mask) {
 			clocktime_t * pCT = &ClockTimer[TimNum] ;
 			pCT->Sum	= 0ULL ;
-			pCT->Last = pCT->Count = 0UL ;
+			pCT->Last	= pCT->Count = 0UL ;
 #if		(buildTICKTIMER_STATS == 1)
-			pCT->Max = 0UL ;
-			pCT->Min = UINT32_MAX ;
+			pCT->Max	= UINT32_MIN ;
+			pCT->Min	= UINT32_MAX ;
 #endif
 			ClockStatus	&= ~(1UL << TimNum) ;
 		}
@@ -194,8 +194,8 @@ void	vClockTimerReset(uint8_t TimerMask) {
  * \return	the current value of the selected clock cycle timer
  */
 uint32_t xClockTimerStart(uint8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < clockTIMER_NUM) ;					// excludes overhead of assert() from timer context
-	ClockStatus	|= (1UL << TimNum) ;
+	IF_myASSERT(debugPARAM, TimNum < clockTIMER_NUM) ;	// excludes overhead of assert()
+	ClockStatus	|= (1UL << TimNum) ;					// and the status mask update  from timer context
 	return ClockTimer[TimNum].Last = GET_CLOCK_COUNTER ;
 }
 
@@ -214,8 +214,8 @@ uint32_t xClockTimerStop(uint8_t TimNum) {
 		pCT->Last = tNow + (0xFFFFFFFF - pCT->Last) ;	// definitely wrapped
 	}
 #if		(buildTICKTIMER_STATS == 1)
-	pCT->Min	= pCT->Last < pCT->Min ? pCT->Last : pCT->Min ;
-	pCT->Max	= pCT->Last > pCT->Max ? pCT->Last : pCT->Max ;
+	if (pCT->Last < pCT->Min)		pCT->Min =  pCT->Last ;
+	if (pCT->Last > pCT->Max)		pCT->Max =  pCT->Last ;
 #endif
 	pCT->Sum	+= pCT->Last ;
 	++pCT->Count ;
@@ -273,6 +273,14 @@ void	vClockTimerGetStatus(uint8_t TimNum, clocktime_t * pCT) {
  * \param	8bit wide (in LSB) bitmapped flag to select timer(s)s to display
  * \return	none
  */
+//#define HDR1	"| # |  Counts |  Total uSec  |  Total Clocks  |    Avg uSec  |    Avg Clocks  |    Last uSec |   Last Clocks  |"
+#define HDR1	"| # | Count   | Total uSec   | Total Clocks   | Avg uSec     | Avg Clocks     | Last uSec    | Last Clocks    |"
+#if		(buildTICKTIMER_STATS == 1)
+//	#define HDR2	"   Min Clocks |    Max Clocks  |\n"
+	#define HDR2	" Min Clocks   | Max Clocks     |\n"
+#else
+	#define	HDR2	"\n"
+#endif
 void	vClockTimerShow(int32_t Handle, uint32_t TimerMask) {
 	uint32_t	mask = 0x0001 ;
 	uint32_t	HdrDone = 0 ;
@@ -280,25 +288,19 @@ void	vClockTimerShow(int32_t Handle, uint32_t TimerMask) {
 		clocktime_t * pCT = &ClockTimer[TimNum] ;
 		if ((TimerMask & mask) && pCT->Count) {
 			if (HdrDone == 0) {
-#if		(buildTICKTIMER_STATS == 1)
-				xdprintf(Handle, "| # |  Counts  |  Total uSec  |  Total Clocks  | Avg uSec | Avg Clocks | Last uSec|Last Clocks | Min Clocks |  Max Clocks  |\n") ;
-#else
-				xdprintf(Handle, "| # |  Counts  |  Total uSec  |  Total Clocks  | Avg uSec | Avg Clocks | Last uSec|Last Clocks |\n") ;
-#endif
+				xdprintf(Handle, HDR1 HDR2) ;
 				HdrDone = 1 ;
 			}
-#if		(buildTICKTIMER_STATS == 1)
-			xdprintf(Handle, "|%2d |%'10u|%'14llu|%'16llu|%'10llu|%'12llu|%'10u|%'12u|%'12u|%'14u|\n",
+			xdprintf(Handle, "|%2d |%'9u|%'14llu|%'16llu|",
 				TimNum, pCT->Count,
-				pCT->Sum / configCLOCKS_PER_USEC, pCT->Sum,
-				(pCT->Sum / pCT->Count) / configCLOCKS_PER_USEC, pCT->Sum / pCT->Count,
-				pCT->Last / configCLOCKS_PER_USEC, pCT->Last,
-				pCT->Min, pCT->Max) ;
-#else
-			xdprintf(Handle, "|%2d |%'10u|%'14llu|%'16llu|%'10llu|%'12llu|%'10u|%'12u|\n", TimNum, pCT->Count,
-				pCT->Sum / configCLOCKS_PER_USEC, pCT->Sum,
+				pCT->Sum / configCLOCKS_PER_USEC, pCT->Sum) ;
+			xdprintf(Handle, "%'14llu|%'16llu|%'14u|%'16u|",
 				(pCT->Sum / pCT->Count) / configCLOCKS_PER_USEC, pCT->Sum / pCT->Count,
 				pCT->Last / configCLOCKS_PER_USEC, pCT->Last) ;
+#if		(buildTICKTIMER_STATS == 1)
+			xdprintf(Handle, "%'14u|%'16u|\n", pCT->Min, pCT->Max) ;
+#else
+			xdprintf(Handle, "\n") ;
 #endif
 		}
 		mask <<= 1 ;

@@ -35,36 +35,54 @@ extern "C" {
 #define	clockACT_TEST				0
 #define	buildTICKTIMER_STATS		1
 
-#define	IF_TICKTIMER_START(x,y)		if (x) xTickTimerStart(y)
-#define	IF_TICKTIMER_STOP(x,y)		if (x) xTickTimerStop(y)
-#define	IF_TICKTIMER_SHOW(x,y,z)	if (x) vTickTimerShow(y, z)
-#define	IF_TICKTIMER_RESET(x,y)		if (x) vTickTimerReset(y)
+#define	IF_TICKTIMER_START(t,y)			if (t) xTickTimerStart(y)
+#define	IF_TICKTIMER_STOP(t,y)			if (t) xTickTimerStop(y)
+#define	IF_TICKTIMER_SHOW(t,y,z)		if (t) vTickTimerShow(y, z)
+#define	IF_TICKTIMER_RESET_NUM(t,y)		if (t) vTickTimerReset(1 << y)
+#define	IF_TICKTIMER_RESET(t,m)			if (t) vTickTimerReset(m)
 
-#define	IF_CLOCKTIMER_START(x,y)	if (x) xClockTimerStart(y)
-#define	IF_CLOCKTIMER_STOP(x,y)		if (x) xClockTimerStop(y)
-#define	IF_CLOCKTIMER_SHOW(x,y,z)	if (x) vClockTimerShow(y, z)
-#define	IF_CLOCKTIMER_RESET(x,y)	if (x) vClockTimerReset(y)
+#define	IF_CLOCKTIMER_START(t,y)		if (t) xClockTimerStart(y)
+#define	IF_CLOCKTIMER_STOP(t,y)			if (t) xClockTimerStop(y)
+#define	IF_CLOCKTIMER_SHOW(t,y,z)		if (t) vClockTimerShow(y, z)
+#define	IF_CLOCKTIMER_RESET_NUM(t,y)	if (t) vClockTimerReset(1 << y)
+#define	IF_CLOCKTIMER_RESET(t,m)		if (t) vClockTimerReset(m)
 
 // ################################# Process timer support #########################################
 
 enum {													// clockTIMERs
+#if 0
 	clockACT_S0,
 	clockACT_S1,
 	clockACT_S2,
 	clockACT_S3,
 	clockACT_SX,
 	clockACT_I2C,
+#else
+	clockACT_S0	= 0,
+	clockACT_S1 = 0,
+	clockACT_S2 = 0,
+	clockACT_S3 = 0,
+	clockACT_SX = 0,
+	clockACT_I2C = 0, 									// set all to ZERO ie overlap
+#endif
+#if 0
 	clockTIMER_SSD1306,
 	clockTIMER_SSD1306_2,
 	clockTIMER_M90EX6,
-	clockTIMER_DS2482,
+#else
+	clockTIMER_SSD1306 = 0,
+	clockTIMER_SSD1306_2 = 0,
+	clockTIMER_M90EX6 = 0, 								// set ALL to ZERO ir overlap
+#endif
+//	clockTIMER_DS2482,
 	clockTIMER_NUM,										// last in list, define all required above here
 } ;
 
 enum {													// tickTIMERs
 	tickTIMER_L2,										// track L2 disconnected time & occurrences
 	tickTIMER_L3,										// track L3 disconnected time & occurrences
-	tickTIMER_DS2482,
+	tickTIMER_MQTT,
+//	tickTIMER_DS2482,
 //	tickTIMER_TFTP,										// TFTP task execution timing...
 	tickTIMER_NUM,										// last in list, define all required above here
 } ;
