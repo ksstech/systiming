@@ -32,127 +32,18 @@
 #include	"FreeRTOS_Support.h"
 #include	<string.h>
 
-#define	debugFLAG					0x0000
+#define	debugFLAG					0x4000
 
-#define	debugPARAM					(debugFLAG & 0x0001)
+#define	debugPARAM					(debugFLAG & 0x4000)
+#define	debugRESULT					(debugFLAG & 0x8000)
 
 // ################################# Code execution timer support ##################################
 
-ticktime_t	TickTimer[tickTIMER_NUM] = { 0 } ;
-uint32_t	TickStatus = 0 ;
+static systimer_t	STdata[systimerMAX_NUM] = { 0 } ;
+static uint32_t		STstat = 0 ;
+static uint32_t		STtype = 0 ;
 
-/**
- * vTickTimerReset() -
- * @param TimerMask
- */
-void	vTickTimerReset(uint32_t TimerMask) {
-	uint32_t	mask = 0x0001 ;
-	for (uint8_t TimNum = 0; TimNum < tickTIMER_NUM; TimNum++) {
-		if (TimerMask & mask) {
-			ticktime_t * pTT = &TickTimer[TimNum] ;
-			pTT->Sum = pTT->Last = pTT->Count = 0UL ;
-#if		(buildTICKTIMER_STATS == 1)
-			pTT->Max = 0UL ;
-			pTT->Min = UINT32_MAX ;
-#endif
-			TickStatus	&= ~(1UL << TimNum) ;
-		}
-		mask <<= 1 ;
-	}
-}
-
-/*
- * xTickTimerStart(tNumber) - start the specified Tick timer
- * \param	tNumber - number of the time to start
- * \return	the current value of the Tick timer
- */
-uint32_t xTickTimerStart(uint8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < tickTIMER_NUM) ;					// function overhead effectively NIL now
-	TickStatus	|= (1UL << TimNum) ;
-	return (TickTimer[TimNum].Last = xTaskGetTickCount()) ;
-}
-
-/*
- * xTickTimerStop() stop the specified Tick timer
- * \param	tNumber - number of timer to stop
- * \return	the number of clock cycles elapsed since the timer was started
- */
-uint32_t xTickTimerStop(uint8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < tickTIMER_NUM) ;
-	ticktime_t * pTT = &TickTimer[TimNum] ;
-	pTT->Last	= xTaskGetTickCount() - pTT->Last ;
-#if		(buildTICKTIMER_STATS == 1)
-	pTT->Min	= pTT->Last < pTT->Min ? pTT->Last : pTT->Min ;
-	pTT->Max	= pTT->Last > pTT->Max ? pTT->Last : pTT->Max ;
-#endif
-	pTT->Sum	+= pTT->Last ;
-	++pTT->Count ;
-	TickStatus	&= ~(1UL << TimNum) ;
-	return pTT->Last ;
-}
-
-/**
- * xTickTimerIsRunning()
- *
- * @return	number of ticks since started or 0 if not running
- */
-uint32_t xTickTimerIsRunning(uint8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < tickTIMER_NUM) ;
-	return (TickStatus & (1UL << TimNum)) ? (xTaskGetTickCount() - TickTimer[TimNum].Last) : 0 ;
-}
-
-uint32_t xTickTimerGetElapsedMillis(uint8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < clockTIMER_NUM) ;
-	return (TickTimer[TimNum].Sum * MILLIS_IN_SECOND) / configTICK_RATE_HZ ;
-}
-
-uint32_t xTickTimerGetElapsedSecs(uint8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < clockTIMER_NUM) ;
-	return TickTimer[TimNum].Sum / configTICK_RATE_HZ ;
-}
-
-void	vTickTimerGetStatus(uint8_t TimNum, ticktime_t * pTT) {
-	IF_myASSERT(debugPARAM, TimNum < clockTIMER_NUM && INRANGE_SRAM(pTT)) ;
-	memcpy(pTT, &TickTimer[TimNum], sizeof(ticktime_t)) ;
-}
-
-/*
- * vTickTimerShow(tMask) - display the current value(s) of the specified timer(s)
- * \brief	MUST do a TickTimerStop before calling to freeze accurate value in array
- * \param	tMask 8bit bitmapped flag to select timer(s) to display
- * \return	none
- */
-void	vTickTimerShow(int32_t Handle, uint32_t TimerMask) {
-	uint32_t	mask = 1, HdrDone = 0 ;
-	for (int32_t TimNum = 0; TimNum < tickTIMER_NUM; TimNum++) {
-		ticktime_t * pTT = &TickTimer[TimNum] ;
-		if ((TimerMask & mask) && pTT->Count) {
-			if (HdrDone == 0) {
-#if		(buildTICKTIMER_STATS == 1)
-				xdprintf(Handle, "| # |  Counts  | Total mSec | Avg mSec | Last mSec| Min mSec | Max mSec |\n") ;
-# else
-				xdprintf(Handle, "| # |  Counts  | Total mSec | Avg mSec | Last mSec|\n") ;
-#endif
-				HdrDone = 1 ;
-			}
-#if		(buildTICKTIMER_STATS == 1)
-			xdprintf(Handle, "|%2d |%'10u|%'12u|%'10u|%'10u|%'10u|%'10u|\n", TimNum, pTT->Count,
-					(pTT->Sum * MILLIS_IN_SECOND) / configTICK_RATE_HZ,
-					((pTT->Sum / pTT->Count) * MILLIS_IN_SECOND) / configTICK_RATE_HZ,
-					(pTT->Last * MILLIS_IN_SECOND) / configTICK_RATE_HZ,
-					pTT->Min, pTT->Max) ;
-#else
-			xdprintf(Handle, "|%2d |%'10u|%'12u|%'10u|%'10u|\n", TimNum, pTT->Count,
-					(pTT->Sum * MILLIS_IN_SECOND) / configTICK_RATE_HZ,
-					((pTT->Sum / pTT->Count) * MILLIS_IN_SECOND) / configTICK_RATE_HZ,
-					(pTT->Last * MILLIS_IN_SECOND) / configTICK_RATE_HZ) ;
-#endif
-		}
-		mask <<= 1 ;
-	}
-}
-
-// ################################## MCU Clock cycle timer support ################################
+#define	SYSTIMER_TYPE(x)	(STtype & (1UL << x))
 
 /* Functions rely on the GET_CLOCK_COUNTER definition being present and correct in "hal_timer.h"
  * Maximum period that can be delayed or measured is UINT32_MAX clock cycles.
@@ -162,167 +53,315 @@ void	vTickTimerShow(int32_t Handle, uint32_t TimerMask) {
  * 		120Mhz		35.791,394 Sec
  * 		160Mhz		26.843,546 Sec
  * 		240Mhz		17.895,697 Sec
+ *
+ * If it is found that values radically jump around it is most likely related to the task
+ * where measurements are started, stopped or reported from NOT RUNNING on a SPECIFIC core
+ * Pin the task to a specific core and the problem should go away.
  */
 
-clocktime_t	ClockTimer[clockTIMER_NUM] = { 0 } ;
-uint32_t	ClockStatus = 0 ;
-
 /**
- * vClockTimerReset() -
+ * vSysTimerReset() -
  * @param TimerMask
  */
-void	vClockTimerReset(uint8_t TimerMask) {
-	uint32_t	mask = 0x0001 ;
-	for (uint8_t TimNum = 0; TimNum < clockTIMER_NUM; TimNum++) {
-		if (TimerMask & mask) {
-			clocktime_t * pCT = &ClockTimer[TimNum] ;
-			pCT->Sum	= 0ULL ;
-			pCT->Last	= pCT->Count = 0UL ;
-#if		(buildTICKTIMER_STATS == 1)
-			pCT->Max	= UINT32_MIN ;
-			pCT->Min	= UINT32_MAX ;
+#if		(systimerSCATTER == 1)
+void	vSysTimerReset(uint32_t TimerMask, bool Type, uint32_t Min, uint32_t Max) {
+#else
+void	vSysTimerReset(uint32_t TimerMask, bool Type) {
 #endif
-			ClockStatus	&= ~(1UL << TimNum) ;
+	IF_myASSERT(debugPARAM, Min < Max) ;
+	uint32_t	mask = 0x00000001 ;
+	systimer_t *pST	= STdata ;
+	for (uint8_t TimNum = 0; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
+		if (TimerMask & mask) {
+			pST->Sum	= 0ULL ;
+			pST->Last	= pST->Count = 0UL ;
+			pST->Max	= UINT32_MIN ;
+			pST->Min	= UINT32_MAX ;
+			STstat		&= ~(1UL << TimNum) ;			// clear active status ie STOP
+			if (Type) {
+				STtype |= (1UL << TimNum) ;				// mark as CLOCK type
+			} else {
+				STtype &= ~(1UL << TimNum) ;			// mark as TICK type
+			}
+#if		(systimerSCATTER == 1)
+			pST->SGmin	= Min ;
+			pST->SGmax	= Max ;
+			pST->SGfact	= (pST->SGmax - pST->SGmin) / (systimerSCATTER_GROUPS-2) ;
+			memset(&pST->Group, 0, SIZEOF_MEMBER(systimer_t, Group)) ;
+#endif
 		}
 		mask <<= 1 ;
 	}
-}
-
-/*
- * xClockTimerStart() - start the specified clock cycle timer
- * \param	tNumber - number of the timer to start
- * \return	the current value of the selected clock cycle timer
- */
-uint32_t xClockTimerStart(uint8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < clockTIMER_NUM) ;	// excludes overhead of assert()
-	ClockStatus	|= (1UL << TimNum) ;					// and the status mask update  from timer context
-	return ClockTimer[TimNum].Last = GET_CLOCK_COUNTER ;
-}
-
-/*
- * xClockTimerStop() stop the specified uSec timer
- * \param	tNumber - number of the clock timer to stop
- * \return	the number of clock cycles elapsed since the timer was started
- */
-uint32_t xClockTimerStop(uint8_t TimNum) {
-	uint32_t tNow = GET_CLOCK_COUNTER ;					// immediately read the clock counter.
-	IF_myASSERT(debugPARAM, TimNum < clockTIMER_NUM) ;	// function overhead effectively NIL now
-	clocktime_t * pCT = &ClockTimer[TimNum] ;
-	if (tNow > pCT->Last) {								// from here outside of running timer context
-		pCT->Last = tNow - pCT->Last ;					// assume no wrap
-	} else {
-		pCT->Last = tNow + (0xFFFFFFFF - pCT->Last) ;	// definitely wrapped
-	}
-#if		(buildTICKTIMER_STATS == 1)
-	if (pCT->Last < pCT->Min)		pCT->Min =  pCT->Last ;
-	if (pCT->Last > pCT->Max)		pCT->Max =  pCT->Last ;
-#endif
-	pCT->Sum	+= pCT->Last ;
-	++pCT->Count ;
-	ClockStatus	&= ~(1UL << TimNum) ;
-	return pCT->Last ;
 }
 
 /**
- * xClockTimerIsRunning()
- *
- * @return	number of clocks since started or 0 if not running
+ * xSysTimerStart() - start the specified timer
+ * @param 		TimNum
+ * @return		current timer value based on type (CLOCKs or TICKs)
  */
-uint32_t xClockTimerIsRunning(uint8_t TimNum) {
-	uint32_t tNow = GET_CLOCK_COUNTER ;					// immediately read the clock counter.
-	IF_myASSERT(debugPARAM, TimNum < tickTIMER_NUM) ;
-	if (ClockStatus & (1UL << TimNum)) {
-		clocktime_t * pCT = &ClockTimer[TimNum] ;
-		if (tNow > pCT->Last) {							// from here outside of running timer context
-			return tNow - pCT->Last ;					// assume no wrap
+uint32_t xSysTimerStart(uint8_t TimNum) {
+	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM) ;
+	STstat	|= (1UL << TimNum) ;				// Mark as started & running
+	return (STdata[TimNum].Last = SYSTIMER_TYPE(TimNum) ? GET_CLOCK_COUNTER() : xTaskGetTickCount()) ;
+}
+
+/**
+ * xSysTimerStop() stop the specified timer and update the statistics
+ * @param	TimNum
+ * @return	Last measured interval based on type (CLOCKs or TICKs)
+ */
+uint32_t xSysTimerStop(uint8_t TimNum) {
+	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM) ;
+	uint32_t tNow	= SYSTIMER_TYPE(TimNum) ? GET_CLOCK_COUNTER() : xTaskGetTickCount() ;
+	STstat			&= ~(1UL << TimNum) ;				// mark as stopped
+	systimer_t *pST	= &STdata[TimNum] ;
+	if (SYSTIMER_TYPE(TimNum)) {
+		pST->Last	= tNow > pST->Last ? tNow - pST->Last : tNow + (0xFFFFFFFF - pST->Last) ;
+	} else {
+		pST->Last	= tNow - pST->Last ;				// very unlikely wrap
+	}
+	if (pST->Last < pST->Min) {
+		pST->Min	=  pST->Last ;
+	}
+	if (pST->Last > pST->Max) {
+		pST->Max	=  pST->Last ;
+	}
+	pST->Sum		+= pST->Last ;
+	++pST->Count ;
+#if		(systimerSCATTER == 1)
+	if (pST->Last <= pST->SGmin) {
+		++pST->Group[0] ;
+	} else if (pST->Last >= pST->SGmax) {
+		++pST->Group[systimerSCATTER_GROUPS-1] ;
+	} else {
+		++pST->Group[((pST->Last - pST->SGmin) / pST->SGfact) + 1] ;
+	}
+#endif
+	return pST->Last ;
+}
+
+/**
+ * xSysTimerIsRunning() -  if timer is running, return value else 0
+ * @param	TimNum
+ * @return	0 if not running
+ * 			current elapsed timer value based on type (CLOCKs or TICKSs)
+ */
+uint32_t xSysTimerIsRunning(uint8_t TimNum) {
+	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM) ;
+	uint32_t	tNow = SYSTIMER_TYPE(TimNum) ? GET_CLOCK_COUNTER() : xTaskGetTickCount() ;
+	if (SYSTIMER_TYPE(TimNum)) {
+		systimer_t * pST = &STdata[TimNum] ;
+		if (tNow > pST->Last) {							// from here outside of running timer context
+			tNow -= pST->Last ;							// most likely NO wrap
 		} else {
-			return tNow + (0xFFFFFFFF - pCT->Last) ;	// definitely wrapped
+			tNow += (0xFFFFFFFF - pST->Last) ;			// definitely wrapped
 		}
+	} else {
+		tNow = 0 ;
 	}
-	return 0 ;
+	return tNow ;
 }
 
-uint64_t xClockTimerGetElapsedClocks(uint8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < clockTIMER_NUM) ;
-	return ClockTimer[TimNum].Sum ;
-}
-
-uint64_t xClockTimerGetElapsedMicros(uint8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < clockTIMER_NUM) ;
-	return ClockTimer[TimNum].Sum / (uint64_t) configCLOCKS_PER_USEC ;
-}
-
-uint64_t xClockTimerGetElapsedMillis(uint8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < clockTIMER_NUM) ;
-	return ClockTimer[TimNum].Sum / (uint64_t) configCLOCKS_PER_MSEC ;
-}
-
-uint64_t xClockTimerGetElapsedSecs(uint8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < clockTIMER_NUM) ;
-	return ClockTimer[TimNum].Sum / (uint64_t) configCLOCKS_PER_SEC ;
-}
-
-void	vClockTimerGetStatus(uint8_t TimNum, clocktime_t * pCT) {
-	IF_myASSERT(debugPARAM, TimNum < clockTIMER_NUM && INRANGE_SRAM(pCT)) ;
-	memcpy(pCT, &ClockTimer[TimNum], sizeof(clocktime_t)) ;
-}
-
-/*
- * vClockTimerShow() display the current value(s) of the selected/specified timer(s)
- * \brief	MUST do a uSecTimerStop before calling to freeze accurate value in array
- * \param	8bit wide (in LSB) bitmapped flag to select timer(s)s to display
- * \return	none
+/**
+ * bSysTimerGetStatus() - return the current timer values and type
+ * @param	TimNum
+ * @param	pST
+ * @return	Type being 0=TICK 1=CLOCK
  */
-//#define HDR1	"| # |  Counts |  Total uSec  |  Total Clocks  |    Avg uSec  |    Avg Clocks  |    Last uSec |   Last Clocks  |"
-#define HDR1	"| # | Count   | Total uSec   | Total Clocks   | Avg uSec     | Avg Clocks     | Last uSec    | Last Clocks    |"
-#if		(buildTICKTIMER_STATS == 1)
-//	#define HDR2	"   Min Clocks |    Max Clocks  |\n"
-	#define HDR2	" Min Clocks   | Max Clocks     |\n"
-#else
-	#define	HDR2	"\n"
-#endif
-void	vClockTimerShow(int32_t Handle, uint32_t TimerMask) {
-	uint32_t	mask = 0x0001 ;
-	uint32_t	HdrDone = 0 ;
-	for (int32_t TimNum = 0; TimNum < clockTIMER_NUM; TimNum++) {
-		clocktime_t * pCT = &ClockTimer[TimNum] ;
-		if ((TimerMask & mask) && pCT->Count) {
-			if (HdrDone == 0) {
-				xdprintf(Handle, HDR1 HDR2) ;
-				HdrDone = 1 ;
-			}
-			xdprintf(Handle, "|%2d |%'9u|%'14llu|%'16llu|",
-				TimNum, pCT->Count,
-				pCT->Sum / configCLOCKS_PER_USEC, pCT->Sum) ;
-			xdprintf(Handle, "%'14llu|%'16llu|%'14u|%'16u|",
-				(pCT->Sum / pCT->Count) / configCLOCKS_PER_USEC, pCT->Sum / pCT->Count,
-				pCT->Last / configCLOCKS_PER_USEC, pCT->Last) ;
-#if		(buildTICKTIMER_STATS == 1)
-			xdprintf(Handle, "%'14u|%'16u|\n", pCT->Min, pCT->Max) ;
-#else
-			xdprintf(Handle, "\n") ;
-#endif
-		}
-		mask <<= 1 ;
-	}
+bool	bSysTimerGetStatus(uint8_t TimNum, systimer_t * pST) {
+	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM && INRANGE_SRAM(pST)) ;
+	memcpy(pST, &STdata[TimNum], sizeof(systimer_t)) ;
+	return SYSTIMER_TYPE(TimNum) ? 1 : 0 ;				// return the Type (0=TICK 1=CLOCK)
 }
 
-/*
+uint64_t xSysTimerGetElapsedClocks(uint8_t TimNum) {
+	IF_myASSERT(debugPARAM, (TimNum < systimerMAX_NUM) && SYSTIMER_TYPE(TimNum)) ;
+	return STdata[TimNum].Sum ;
+}
+
+uint64_t xSysTimerGetElapsedMicros(uint8_t TimNum) {
+	IF_myASSERT(debugPARAM, (TimNum < systimerMAX_NUM) && SYSTIMER_TYPE(TimNum)) ;
+	return myCLOCKS_TO_US(STdata[TimNum].Sum, uint64_t) ;
+}
+
+uint64_t xSysTimerGetElapsedMillis(uint8_t TimNum) {
+	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM) ;
+	return SYSTIMER_TYPE(TimNum) ? myCLOCKS_TO_MS(STdata[TimNum].Sum, uint64_t) : myTICKS_TO_MS(STdata[TimNum].Sum, uint64_t) ;
+}
+
+uint64_t xSysTimerGetElapsedSecs(uint8_t TimNum) {
+	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM) ;
+	return SYSTIMER_TYPE(TimNum) ? myCLOCKS_TO_SEC(STdata[TimNum].Sum, uint64_t) : myTICKS_TO_MS(STdata[TimNum].Sum, uint64_t) ;
+}
+
+#define	systimerHDR_TICKS	"| # | Count   | Last mSec| Min mSec | Max mSec | Avg mSec | Total mSec |"
+#define	systimerHDR_CLOCKS	"| # | Count   | Last uSec  | Min uSec   | Max uSec   | Avg uSec   | Total uSec   |"	\
+							" Last Clocks  | Min Clocks   | Max Clocks   | Avg Clocks   | Total Clocks   |"
+
+void	vSysTimerShowHeading(int32_t Handle, const char * Header, systimer_t * pST) {
+	xdprintf(Handle, Header) ;
+#if		(systimerSCATTER == 1) && (systimerSHATTER_HDR_SHOW == 1)
+	for (int32_t Idx = 0; Idx < systimerSCATTER_GROUPS; ++Idx) {
+		xdprintf(Handle, "%-6u+|", Idx == 0 ? 0 :
+									Idx == 1 ? pST->SGmin + 1 :
+									Idx == systimerSCATTER_GROUPS-1 ? pST->SGmax :
+									pST->SGmin + (pST->SGfact * (Idx-1)) + 1) ;
+	}
+#endif
+	xdprintf(Handle, "\n") ;
+}
+
+void	vSysTimerShowScatter(int32_t Handle, systimer_t * pST) {
+#if (systimerSHATTER_HDR_SHOW == 1)
+	for (int32_t Idx = 0; Idx < systimerSCATTER_GROUPS; xdprintf(Handle, "%7u|", pST->Group[Idx++])) ;
+#else
+	for (int32_t Idx = 0; Idx < systimerSCATTER_GROUPS; ++Idx) {
+		if (pST->Group[Idx]) {
+#if 0
+			uint32_t Val, Div, Sep ;
+			Val	= Idx == 0 ? 0 : pST->SGmin + ((Idx - 1) * pST->SGfact) + 1 ;
+			Div	= Val > (10*MILLION) ? MILLION : Val > (10*THOUSAND) ? THOUSAND : 1 ;
+			Sep	= Val > (10*MILLION) ? CHR_M : Val > (10*THOUSAND) ? CHR_K : CHR_NUL ;
+			xdprintf(Handle, "  %u%c~", Val / Div, Sep) ;
+
+			Val	= pST->SGmin + (Idx * pST->SGfact) ;
+			Div	= Val > (10*MILLION) ? MILLION : Val > (10*THOUSAND) ? THOUSAND : 1 ;
+			Sep	= Val > (10*MILLION) ? CHR_M : Val > (10*THOUSAND) ? CHR_K : CHR_NUL ;
+			xdprintf(Handle, "%u%c=%u", Val / Div, Sep, pST->Group[Idx]) ;
+#else
+			xdprintf(Handle, "  %#u~%#u=%u",
+				Idx == 0 ? 0 : pST->SGmin + ((Idx - 1) * pST->SGfact) + 1,
+				pST->SGmin + (Idx * pST->SGfact),
+				pST->Group[Idx]) ;
+#endif
+
+		}
+	}
+#endif
+}
+
+/**
+ * vSysTimerShow(tMask) - display the current value(s) of the specified timer(s)
+ * @brief	MUST do a SysTimerStop() before calling to freeze accurate value in array
+ * @param	tMask 8bit bitmapped flag to select timer(s) to display
+ * @return	none
+ */
+void	vSysTimerShow(int32_t Handle, uint32_t TimerMask) {
+#if 	(systimerSHATTER_HDR_SHOW == 1)
+	uint32_t	Mask, TimNum ;
+	systimer_t * pST ;
+	for (TimNum = 0, pST = STdata, Mask = 0x00000001; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
+		if ((TimerMask & Mask) && pST->Count) {
+			vSysTimerShowHeading(Handle, SYSTIMER_TYPE(TimNum) ? systimerHDR_CLOCKS : systimerHDR_TICKS, pST) ;
+			if (SYSTIMER_TYPE(TimNum)) {
+				xdprintf(Handle, "|%2d |%'9u|%'12llu|%'14llu|",
+					TimNum,
+					pST->Count,
+					myCLOCKS_TO_US(pST->Sum, uint64_t) / (uint64_t) pST->Count,
+					myCLOCKS_TO_US(pST->Sum, uint64_t)) ;
+				xdprintf(Handle, "%'12u|%'12u|%'12u|%'14u|",
+					myCLOCKS_TO_US(pST->Last, uint32_t),
+					myCLOCKS_TO_US(pST->Min, uint32_t),
+					myCLOCKS_TO_US(pST->Max, uint32_t),
+					pST->Sum / (uint64_t) pST->Count) ;
+				xdprintf(Handle, "%'16u|%'14u|%'14u|%'14u|",
+					pST->Sum, pST->Last, pST->Min, pST->Max) ;
+			} else {
+				xdprintf(Handle, "|%2d |%'9u|%'10llu|%'12llu|",
+					TimNum,
+					pST->Count,
+					myTICKS_TO_MS(pST->Sum, uint64_t) / (uint64_t) pST->Count,
+					myTICKS_TO_MS(pST->Sum, uint64_t)) ;
+				xdprintf(Handle, "%'10u|%'10u|%'10u|",
+					myTICKS_TO_MS(pST->Last, uint32_t),
+					pST->Min,
+					pST->Max) ;
+			}
+#if		(systimerSCATTER == 1)
+			vSysTimerShowScatter(Handle, pST) ;
+#endif
+			xdprintf(Handle, "\n\n") ;
+		}
+		Mask <<= 1 ;
+	}
+#else
+	uint32_t	Mask, TimNum ;
+	systimer_t * pST ;
+	bool	HdrDone ;
+	for (TimNum = 0, pST = STdata, Mask = 0x00000001, HdrDone = 0; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
+		if ((TimerMask & Mask) && pST->Count) {
+			if (SYSTIMER_TYPE(TimNum)) {
+				if (HdrDone == 0) { vSysTimerShowHeading(Handle, systimerHDR_CLOCKS, pST) ; HdrDone = 1 ; }
+//				xdprintf(Handle, "|%2d |%'9u|%'12u|%'12u|",
+				xdprintf(Handle, "|%2d |%'9u|%'#12u|%'#12u|",
+					TimNum,
+					pST->Count,
+					myCLOCKS_TO_US(pST->Last, uint32_t),
+					myCLOCKS_TO_US(pST->Min, uint32_t)) ;
+//				xdprintf(Handle, "%'12u|%'12llu|%'14llu|%'14u|",
+				xdprintf(Handle, "%#'12u|%#'12llu|%#'14llu|%#'14u|",
+					myCLOCKS_TO_US(pST->Max, uint32_t),
+					myCLOCKS_TO_US(pST->Sum, uint64_t) / (uint64_t) pST->Count,
+					myCLOCKS_TO_US(pST->Sum, uint64_t),
+					pST->Last) ;
+//				xdprintf(Handle, "%'14u|%'14u|%'14llu|%'16llu|",
+				xdprintf(Handle, "%#'14u|%#'14u|%#'14llu|%#'16llu|",
+					pST->Min,
+					pST->Max,
+					pST->Sum / (uint64_t) pST->Count,
+					pST->Sum) ;
+#if		(systimerSCATTER == 1)
+				vSysTimerShowScatter(Handle, pST) ;
+#endif
+				xdprintf(Handle, "\n") ;
+			}
+		}
+		Mask <<= 1 ;
+	}
+
+	for (TimNum = 0, pST = STdata, Mask = 0x00000001, HdrDone = 0; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
+		if ((TimerMask & Mask) && pST->Count) {
+			if (!SYSTIMER_TYPE(TimNum)) {
+				if (HdrDone == 0) { vSysTimerShowHeading(Handle, systimerHDR_TICKS, pST) ; HdrDone = 1 ; }
+				xdprintf(Handle, "|%2d |%'9u|%'10u|%'10u|",
+					TimNum,
+					pST->Count,
+					myTICKS_TO_MS(pST->Last, uint32_t),
+					myTICKS_TO_MS(pST->Min, uint32_t)) ;
+				xdprintf(Handle, "%'10u|%'10llu|%'12llu|",
+					myTICKS_TO_MS(pST->Max, uint32_t),
+					myTICKS_TO_MS(pST->Sum, uint64_t) / (uint64_t) pST->Count,
+					myTICKS_TO_MS(pST->Sum, uint64_t)) ;
+#if		(systimerSCATTER == 1)
+				vSysTimerShowScatter(Handle, pST) ;
+#endif
+				xdprintf(Handle, "\n") ;
+			}
+		}
+		Mask <<= 1 ;
+	}
+	xdprintf(Handle, "\n") ;
+#endif
+}
+
+// ################################## MCU Clock cycle delay support ################################
+
+/**
  * vClockDelayUsec() - delay (not yielding) program execution for a specified number of uSecs
- * \param	Number of uSecs to delay
- * \return	Clock counter at the end
+ * @param	Number of uSecs to delay
+ * @return	Clock counter at the end
  */
 uint32_t xClockDelayUsec(uint32_t uSec) {
 	IF_myASSERT(debugPARAM, uSec < (UINT32_MAX / configCLOCKS_PER_USEC)) ;
-	uint32_t ClockEnd	= GET_CLOCK_COUNTER + halUS_TO_CLOCKS(uSec) ;
-	while ((ClockEnd - GET_CLOCK_COUNTER) > configCLOCKS_PER_USEC ) ;
+	uint32_t ClockEnd	= GET_CLOCK_COUNTER() + halUS_TO_CLOCKS(uSec) ;
+	while ((ClockEnd - GET_CLOCK_COUNTER()) > configCLOCKS_PER_USEC ) ;
 	return ClockEnd ;
 }
 
-/*
+/**
  * xClockDelayMsec() - delay (not yielding) program execution for a specified number of mSecs
- * \param	Number of mSecs to delay
- * \return	Clock counter at the end
+ * @param	Number of mSecs to delay
+ * #return	Clock counter at the end
  */
 uint32_t xClockDelayMsec(uint32_t mSec) {
 	IF_myASSERT(debugPARAM, mSec < (UINT32_MAX / configCLOCKS_PER_MSEC)) ;
@@ -333,38 +372,28 @@ uint32_t xClockDelayMsec(uint32_t mSec) {
 
 void	vSysTimingTest(void) {
 	uint32_t	uCount, uSecs ;
-// Test the uSec delays
-	uCount	= GET_CLOCK_COUNTER ;
+	// Test the uSec delays
+	uCount	= GET_CLOCK_COUNTER() ;
 	uSecs	= xClockDelayUsec(100) ;
 	SL_DBG("Delay=%'u uS\r\n", (uSecs - uCount) / configCLOCKS_PER_USEC) ;
 
-	uCount	= GET_CLOCK_COUNTER ;
+	uCount	= GET_CLOCK_COUNTER() ;
 	uSecs	= xClockDelayUsec(1000) ;
 	SL_DBG("Delay=%'u uS\r\n", (uSecs - uCount) / configCLOCKS_PER_USEC) ;
 
-	uCount	= GET_CLOCK_COUNTER ;
+	uCount	= GET_CLOCK_COUNTER() ;
 	uSecs	= xClockDelayUsec(10000) ;
 	SL_DBG("Delay=%'u uS\r\n", (uSecs - uCount) / configCLOCKS_PER_USEC) ;
 
-// Test the mSec timers
-	for (uint8_t uCount = 0; uCount < tickTIMER_NUM; uCount++) {
-		xClockDelayMsec(2) ;
-		xTickTimerStart(uCount) ;
-	}
-	for (uint8_t uCount = 0; uCount < tickTIMER_NUM; uCount++) {
-		xClockDelayMsec(4) ;
-		xTickTimerStop(uCount) ;
-	}
-	vTickTimerShow(1, 0xFFFF) ;
+	// Test the mSec timers
+	vSysTimerReset(0xFFFFFFFF, 0, 5, 20) ;
+	for (uCount = 0; uCount < systimerMAX_NUM; uCount++) { xClockDelayMsec(2) ; xSysTimerStart(uCount) ; }
+	for (uCount = 0; uCount < systimerMAX_NUM; uCount++) { xClockDelayMsec(4) ; xSysTimerStop(uCount) ; }
+	vSysTimerShow(1, 0xFFFF) ;
 
-// Test the Clock Cycle timers
-	for (uint8_t uCount = 0; uCount < clockTIMER_NUM; uCount++) {
-		xClockDelayMsec(2) ;
-		xClockTimerStart(uCount) ;
-	}
-	for (uint8_t uCount = 0; uCount < clockTIMER_NUM; uCount++) {
-		xClockDelayMsec(4) ;
-		xClockTimerStop(uCount) ;
-	}
-	vClockTimerShow(1, 0xFFFF) ;
+	// Test the Clock Cycle timers
+	vSysTimerReset(0xFFFFFFFF, 1, myMS_TO_CLOCKS(1), myMS_TO_CLOCKS(20)) ;
+	for (uCount = 0; uCount < systimerMAX_NUM; uCount++) { xClockDelayMsec(2) ;xSysTimerStart(uCount) ; }
+	for (uCount = 0; uCount < systimerMAX_NUM; uCount++) { xClockDelayMsec(4) ; xSysTimerStop(uCount) ; }
+	vSysTimerShow(1, 0xFFFF) ;
 }
