@@ -27,11 +27,16 @@ Value		STmin		STmax	G-0		G-1		G-2		G-3		G-4		G-5		G-6		G-7		G-8		G-9
 Comparison:
 ===========
 
-Feature					TICKtimer						CLOCKtimer					Comments
--------					---------						----------					--------
+Feature					TICKtimer							CLOCKtimer						Comments
+-------					---------							----------						--------
+Timesource				RTOS tick							MCU clock counter
+Resolution				Based on tick frequency				Based on clock speed  
+	Default				1KHz = 1mSec						80MHz=12.5nSec, 250Mhz=4.0nS
+Display Unit			mSec								uSec & clocks
 
-
-
+Statistics available	Min, Max, Avg, Count, Sum			Min, Max, Avg, Count, Sum
+Scatter groups (SG)		Compile time option					Compile time option
+Default #SG buckets		10 (compile time selected)			10 (compile time selected)
 
 Comments:
 =========
