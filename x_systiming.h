@@ -22,6 +22,8 @@
  * x_systiming.h
  */
 
+#include	"freertos/FreeRTOSConfig.h"
+
 #include	<stdint.h>
 
 #pragma once
@@ -32,23 +34,18 @@ extern "C" {
 
 // #################################################################################################
 
-#define	systimerSCATTER						1			// enable scatter graphs support
-#define	systimerSCATTER_GROUPS				10			// number of scatter graph groupings
-#define	systimerSHATTER_HDR_SHOW			0			// 0=no scatter heading ie intelligent display
+#define	systimerSCATTER							1			// enable scatter graphs support
+#define	systimerSCATTER_GROUPS					10			// number of scatter graph groupings
+#define	systimerSHATTER_HDR_SHOW				0			// 0=no scatter heading ie intelligent display
 
-#define	IF_SYSTIMER_START(t,y)				if (t) xSysTimerStart(y)
-#define	IF_SYSTIMER_STOP(t,y)				if (t) xSysTimerStop(y)
+#define	IF_SYSTIMER_START(t,y)					if (t) xSysTimerStart(y)
+#define	IF_SYSTIMER_STOP(t,y)					if (t) xSysTimerStop(y)
 
-#define	IF_SYSTIMER_SHOW(t,h,m)				if (t) vSysTimerShow(h, m)
-#define	IF_SYSTIMER_SHOW_NUM(t,h,n)			if (t) vSysTimerShow(h, 1 << n)
+#define	IF_SYSTIMER_SHOW(t,h,m)					if (t) vSysTimerShow(h, m)
+#define	IF_SYSTIMER_SHOW_NUM(t,h,n)				if (t) vSysTimerShow(h, 1 << n)
 
-#if		(systimerSCATTER == 1)
-	#define	IF_SYSTIMER_RESET(t,m,T,a,b)		if (t) vSysTimerReset(m, T, a, b)
-	#define	IF_SYSTIMER_RESET_NUM(t,n,T,a,b)	if (t) vSysTimerReset(1UL << n, T, a, b)
-#else
-	#define	IF_SYSTIMER_RESET(t,m,T)			if (t) vSysTimerReset(m, T)
-	#define	IF_SYSTIMER_RESET_NUM(t,n,T)		if (t) vSysTimerReset(1UL << n, T)
-#endif
+#define	IF_SYSTIMER_RESET(t,m,T,Tag, ...)		if (t) vSysTimerReset(m,T,Tag, ##__VA_ARGS__ )
+#define	IF_SYSTIMER_RESET_NUM(t,n,T,Tag, ...)	if (t) vSysTimerReset(1UL<<n,T,Tag, ##__VA_ARGS__  )
 
 // ################################# Process timer support #########################################
 
@@ -71,19 +68,16 @@ enum {
 } ;
 
 typedef struct systimer_s {
+	const char * Tag ;
 	uint64_t	Sum ;
 	uint32_t	Last, Count, Min, Max ;
 #if		(systimerSCATTER == 1)
 	uint32_t	SGmin, SGmax, SGfact ;
-	uint16_t	Group[systimerSCATTER_GROUPS] ;
+	uint32_t	Group[systimerSCATTER_GROUPS] ;
 #endif
 } systimer_t ;
 
-#if		(systimerSCATTER == 1)
-	void	vSysTimerReset(uint32_t TimerMask, bool Type, uint32_t Min, uint32_t Max) ;
-#else
-	void	vSysTimerReset(uint32_t TimerMask, bool Type) ;
-#endif
+void	vSysTimerReset(uint32_t TimerMask, bool Type, const char * Tag, ...) ;
 uint32_t xSysTimerStart(uint8_t tNumber) ;
 uint32_t xSysTimerStop(uint8_t tNumber) ;
 uint32_t xSysTimerIsRunning(uint8_t TimNum) ;
