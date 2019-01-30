@@ -42,6 +42,7 @@
 // ################################# Code execution timer support ##################################
 
 #define	SYSTIMER_TYPE(x)	(STtype & (1UL << x))
+
 static uint32_t		STstat = 0 ;
 static uint32_t		STtype = 0 ;
 static systimer_t	STdata[systimerMAX_NUM] = { 0 } ;
@@ -87,7 +88,6 @@ void	vSysTimerReset(uint32_t TimerMask, bool Type, const char * Tag, ...) {
 			pST->SGmax	= va_arg(vaList, uint32_t) ;	// Max ;
 			IF_myASSERT(debugPARAM, pST->SGmin < pST->SGmax) ;
 			va_end(vaList) ;
-			pST->SGfact	= (pST->SGmax - pST->SGmin) / (systimerSCATTER_GROUPS-2) ;
 #endif
 		}
 		mask <<= 1 ;
@@ -130,15 +130,17 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 		pST->Max	=  pST->Last ;
 	}
 #if		(systimerSCATTER == 1)
+	int32_t Idx ;
 	if (pST->Last <= pST->SGmin) {
-		pST->Group[0]++ ;
+		Idx = 0 ;
 	} else if (pST->Last >= pST->SGmax) {
-		pST->Group[systimerSCATTER_GROUPS-1]++ ;
+		Idx = systimerSCATTER_GROUPS-1 ;
 	} else {
-		int32_t Idx = 1 + (pST->Last - pST->SGmin) / pST->SGfact ;
-		IF_myASSERT(debugRESULT, Idx < (systimerSCATTER_GROUPS - 1)) ;
-		pST->Group[Idx]++ ;
+		Idx = 1 + ((pST->Last - pST->SGmin) * (systimerSCATTER_GROUPS-2) ) / (pST->SGmax - pST->SGmin) ;
 	}
+	IF_CPRINT(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER_GROUPS-1, int32_t), "lo=%u hi=%u last=%u idx=%d\n", pST->SGmin, pST->SGmax, pST->Last, Idx) ;
+	IF_myASSERT(debugRESULT, INRANGE(0, Idx, systimerSCATTER_GROUPS-1, int32_t)) ;
+	++pST->Group[Idx] ;
 #endif
 	return pST->Last ;
 }
