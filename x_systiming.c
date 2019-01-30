@@ -397,18 +397,21 @@ void	vSysTimingTestSet(uint32_t Type, const char * Tag, uint32_t Delay) {
 }
 
 void	vSysTimingTest(void) {
+#if 0
 	uint32_t	uCount, uSecs ;
 	// Test the uSec delays
 	uCount	= GET_CLOCK_COUNTER() ;
 	uSecs	= xClockDelayUsec(100) ;
-	SL_DBG("Delay=%'u uS\r\n", (uSecs - uCount) / configCLOCKS_PER_USEC) ;
+	SL_DBG("Delay=%'u uS", (uSecs - uCount) / configCLOCKS_PER_USEC) ;
 
 	uCount	= GET_CLOCK_COUNTER() ;
 	uSecs	= xClockDelayUsec(1000) ;
-	SL_DBG("Delay=%'u uS\r\n", (uSecs - uCount) / configCLOCKS_PER_USEC) ;
+	SL_DBG("Delay=%'u uS", (uSecs - uCount) / configCLOCKS_PER_USEC) ;
 
 	uCount	= GET_CLOCK_COUNTER() ;
 	uSecs	= xClockDelayUsec(10000) ;
+	SL_DBG("Delay=%'u uS", (uSecs - uCount) / configCLOCKS_PER_USEC) ;
+#endif
 #if 1
 	// Test TICK timers & Scatter groups
 	vSysTimingTestSet(systimerTICKS, "TICKS", 1) ;
