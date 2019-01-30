@@ -386,6 +386,16 @@ uint32_t xClockDelayMsec(uint32_t mSec) {
 
 // ##################################### functional tests ##########################################
 
+void	vSysTimingTestSet(uint32_t Type, const char * Tag, uint32_t Delay) {
+	vSysTimerReset(0xFFFFFFFF, Type, Tag, myMS_TO_TICKS(Delay), myMS_TO_TICKS(Delay * systimerSCATTER_GROUPS)) ;
+	for (uint32_t Steps = 0; Steps <= systimerSCATTER_GROUPS; ++Steps) {
+		for (uint32_t Count = 0; Count < systimerMAX_NUM; xSysTimerStart(Count++)) ;
+		vTaskDelay(pdMS_TO_TICKS((Delay * Steps) + 1)) ;
+		for (uint32_t Count = 0; Count < systimerMAX_NUM; xSysTimerStop(Count++)) ;
+	}
+	vSysTimerShow(1, 0xFFFF) ;
+}
+
 void	vSysTimingTest(void) {
 	uint32_t	uCount, uSecs ;
 	// Test the uSec delays
@@ -412,4 +422,18 @@ void	vSysTimingTest(void) {
 	for (uCount = 0; uCount < systimerMAX_NUM; uCount++) { xClockDelayMsec(2) ;xSysTimerStart(uCount) ; }
 	for (uCount = 0; uCount < systimerMAX_NUM; uCount++) { xClockDelayMsec(4) ; xSysTimerStop(uCount) ; }
 	vSysTimerShow(1, 0xFFFF) ;
+#if 1
+	// Test TICK timers & Scatter groups
+	vSysTimingTestSet(systimerTICKS, "TICKS", 1) ;
+	vSysTimingTestSet(systimerTICKS, "TICKS", 10) ;
+	vSysTimingTestSet(systimerTICKS, "TICKS", 100) ;
+	vSysTimingTestSet(systimerTICKS, "TICKS", 1000) ;
+#endif
+#if 0
+	// Test CLOCK timers & Scatter groups
+	vSysTimingTestSet(systimerCLOCKS, "CLOCKS", 1) ;
+	vSysTimingTestSet(systimerCLOCKS, "CLOCKS", 10) ;
+	vSysTimingTestSet(systimerCLOCKS, "CLOCKS", 100) ;
+	vSysTimingTestSet(systimerCLOCKS, "CLOCKS", 1000) ;
+#endif
 }
