@@ -275,13 +275,20 @@ void	vSysTimerShow(int32_t Handle, uint32_t TimerMask) {
 												  "LastClk|Min Clk|Max Clk|Avg Clk|Sum Clk|\n"
 
 void	vSysTimerShowScatter(int32_t Handle, systimer_t * pST) {
+	uint32_t Rlo, Rhi ;
 	for (int32_t Idx = 0; Idx < systimerSCATTER_GROUPS; ++Idx) {
 		if (pST->Group[Idx]) {
-			xdprintf(Handle, "  #%d:%'#u~%'#u=%'#u",
-				Idx,
-				Idx == 0 ? 0 : pST->SGmin + ((Idx - 1) * pST->SGfact) + 1,
-				pST->SGmin + (Idx * pST->SGfact),
-				pST->Group[Idx]) ;
+			if (Idx == 0) {
+				Rlo = UINT32_MIN ;
+				Rhi = pST->SGmin ;
+			} else if (Idx == (systimerSCATTER_GROUPS-1)) {
+				Rlo = pST->SGmax ;
+				Rhi = UINT32_MAX ;
+			} else {
+				Rlo	= (Idx - 1) * (pST->SGmax - pST->SGmin) / (systimerSCATTER_GROUPS-2) + pST->SGmin ;
+				Rhi = Rlo + (pST->SGmax - pST->SGmin) / (systimerSCATTER_GROUPS-2) ;
+			}
+			xdprintf(Handle, "  #%d:%'#u->%'#u=%'#u", Idx, Rlo, Rhi, pST->Group[Idx]) ;
 		}
 	}
 }
