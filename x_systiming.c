@@ -409,19 +409,6 @@ void	vSysTimingTest(void) {
 
 	uCount	= GET_CLOCK_COUNTER() ;
 	uSecs	= xClockDelayUsec(10000) ;
-	SL_DBG("Delay=%'u uS\r\n", (uSecs - uCount) / configCLOCKS_PER_USEC) ;
-
-	// Test the mSec timers
-	vSysTimerReset(0xFFFFFFFF, systimerTICKS, "Test mS", myMS_TO_TICKS(5), myMS_TO_TICKS(20)) ;
-	for (uCount = 0; uCount < systimerMAX_NUM; uCount++) { xClockDelayMsec(2) ; xSysTimerStart(uCount) ; }
-	for (uCount = 0; uCount < systimerMAX_NUM; uCount++) { xClockDelayMsec(4) ; xSysTimerStop(uCount) ; }
-	vSysTimerShow(1, 0xFFFF) ;
-
-	// Test the Clock Cycle timers
-	vSysTimerReset(0xFFFFFFFF, systimerCLOCKS, "Test Clk", myMS_TO_CLOCKS(1), myMS_TO_CLOCKS(20)) ;
-	for (uCount = 0; uCount < systimerMAX_NUM; uCount++) { xClockDelayMsec(2) ;xSysTimerStart(uCount) ; }
-	for (uCount = 0; uCount < systimerMAX_NUM; uCount++) { xClockDelayMsec(4) ; xSysTimerStop(uCount) ; }
-	vSysTimerShow(1, 0xFFFF) ;
 #if 1
 	// Test TICK timers & Scatter groups
 	vSysTimingTestSet(systimerTICKS, "TICKS", 1) ;
