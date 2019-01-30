@@ -36,7 +36,7 @@ extern "C" {
 
 #define	systimerSCATTER							1			// enable scatter graphs support
 #define	systimerSCATTER_GROUPS					10			// number of scatter graph groupings
-#define	systimerSHATTER_HDR_SHOW				0			// 0=no scatter heading ie intelligent display
+#define	systimerSCATTER_HDR_SHOW				0			// 0=no scatter heading ie intelligent display
 
 #define	IF_SYSTIMER_START(t,y)					if (t) xSysTimerStart(y)
 #define	IF_SYSTIMER_STOP(t,y)					if (t) xSysTimerStop(y)
@@ -52,7 +52,6 @@ extern "C" {
 enum { systimerTICKS, systimerCLOCKS } ;
 
 enum {
-	systimerGENERAL,									// reserve for adhoc use
 	systimerL2, 		systimerL3,						// track Lx disconnected time & occurrences
 	systimerMQTT_RX,	systimerMQTT_TX,
 	systimerHTTP,
@@ -72,7 +71,7 @@ typedef struct systimer_s {
 	uint64_t	Sum ;
 	uint32_t	Last, Count, Min, Max ;
 #if		(systimerSCATTER == 1)
-	uint32_t	SGmin, SGmax, SGfact ;
+	uint32_t	SGmin, SGmax ;
 	uint32_t	Group[systimerSCATTER_GROUPS] ;
 #endif
 } systimer_t ;

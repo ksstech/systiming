@@ -34,18 +34,17 @@
 
 //temporary
 #include	"esp_panic.h"
-#define	debugFLAG					0x4000
+#define	debugFLAG					0xC000
 
 #define	debugPARAM					(debugFLAG & 0x4000)
 #define	debugRESULT					(debugFLAG & 0x8000)
 
 // ################################# Code execution timer support ##################################
 
-static systimer_t	STdata[systimerMAX_NUM] = { 0 } ;
+#define	SYSTIMER_TYPE(x)	(STtype & (1UL << x))
 static uint32_t		STstat = 0 ;
 static uint32_t		STtype = 0 ;
-
-#define	SYSTIMER_TYPE(x)	(STtype & (1UL << x))
+static systimer_t	STdata[systimerMAX_NUM] = { 0 } ;
 
 /* Functions rely on the GET_CLOCK_COUNTER definition being present and correct in "hal_timer.h"
  * Maximum period that can be delayed or measured is UINT32_MAX clock cycles.
@@ -70,10 +69,10 @@ void	vSysTimerReset(uint32_t TimerMask, bool Type, const char * Tag, ...) {
 	systimer_t *pST	= STdata ;
 	for (uint8_t TimNum = 0; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
 		if (TimerMask & mask) {
-			if (TimNum == systimerMQTT_TX) 	{ esp_clear_watchpoint(0) ; }
+//			if (TimNum == systimerMQTT_TX) 	{ esp_clear_watchpoint(0) ; }
 			memset(pST, 0, sizeof(systimer_t)) ;
 			pST->Tag	= Tag ;
-			if (TimNum == systimerMQTT_TX)	{ esp_set_watchpoint(0, &pST->Tag, sizeof(const char *), ESP_WATCHPOINT_STORE) ; }
+//			if (TimNum == systimerMQTT_TX)	{ esp_set_watchpoint(0, &pST->Tag, sizeof(const char *), ESP_WATCHPOINT_STORE) ; }
 			pST->Min	= UINT32_MAX ;
 			STstat		&= ~(1UL << TimNum) ;			// clear active status ie STOP
 			if (Type) {
@@ -116,13 +115,14 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 	uint32_t tNow	= SYSTIMER_TYPE(TimNum) ? GET_CLOCK_COUNTER() : xTaskGetTickCount() ;
 	STstat			&= ~(1UL << TimNum) ;				// mark as stopped
 	systimer_t *pST	= &STdata[TimNum] ;
-	if (SYSTIMER_TYPE(TimNum)) {
+	if (SYSTIMER_TYPE(TimNum)) {						// CLOCK type ?
 		pST->Last	= tNow > pST->Last ? tNow - pST->Last : tNow + (0xFFFFFFFF - pST->Last) ;
-	} else {
+	} else {											// TICK type...
 		pST->Last	= tNow - pST->Last ;				// very unlikely wrap
 	}
 	pST->Sum		+= pST->Last ;
 	pST->Count++ ;
+	// update Min & Max if required
 	if (pST->Min > pST->Last) {
 		pST->Min	=  pST->Last ;
 	}
@@ -197,7 +197,7 @@ uint64_t xSysTimerGetElapsedSecs(uint8_t TimNum) {
 	return SYSTIMER_TYPE(TimNum) ? myCLOCKS_TO_SEC(STdata[TimNum].Sum, uint64_t) : myTICKS_TO_MS(STdata[TimNum].Sum, uint64_t) ;
 }
 
-#if 	(systimerSHATTER_HDR_SHOW == 1)
+#if 	(systimerSCATTER_HDR_SHOW == 1)
 	#define	systimerHDR_TICKS	"| # |TickTMR | Count   | Last mSec| Min mSec | Max mSec | Avg mSec | Total mSec |"
 	#define	systimerHDR_CLOCKS	"| # |ClockTMR| Count   | Last uSec  | Min uSec   | Max uSec   | Avg uSec   | Total uSec   |"	\
 														" Last Clocks  | Min Clocks   | Max Clocks   | Avg Clocks   | Total Clocks   |"
