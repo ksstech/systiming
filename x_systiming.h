@@ -55,7 +55,8 @@ enum {
 	systimerL2, 		systimerL3,						// track Lx disconnected time & occurrences
 	systimerMQTT_RX,	systimerMQTT_TX,
 	systimerHTTP,
-	systimerFOTA,
+//	systimerFOTA,
+//	systimerSLOG,
 //	systimerPCA9555,
 //	systimerDS2482,
 //	systimerM90EX6,
@@ -64,6 +65,8 @@ enum {
 //	systimerTFTP,										// TFTP task execution timing...
 	systimerMAX_NUM,									// last in list, define all required above here
 
+	systimerFOTA = 31,
+	systimerSLOG = 31,
 	systimerPCA9555 = 31,
 	systimerDS2482 = 31,
 	systimerM90EX6 = 31,
