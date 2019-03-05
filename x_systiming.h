@@ -56,14 +56,20 @@ enum {
 	systimerMQTT_RX,	systimerMQTT_TX,
 	systimerHTTP,
 	systimerFOTA,
+//	systimerPCA9555,
 //	systimerDS2482,
-//	systimerACT_S0, systimerACT_S1, systimerACT_S2, systimerACT_S3,systimerACT_SX,systimerACT_I2C,
-//	systimerSSD1306, systimerSSD1306_2, systimerM90EX6,
+//	systimerM90EX6,
+//	systimerACT_S0, systimerACT_S1, systimerACT_S2, systimerACT_S3, systimerACT_SX,
+//	systimerSSD1306, systimerSSD1306_2,
 //	systimerTFTP,										// TFTP task execution timing...
 	systimerMAX_NUM,									// last in list, define all required above here
+
+	systimerPCA9555 = 31,
 	systimerDS2482 = 31,
-	systimerACT_S0 = 31, systimerACT_S1 = 31, systimerACT_S2 = 31, systimerACT_S3 = 31, systimerACT_SX = 31, systimerACT_I2C = 31,
-	systimerSSD1306 = 31, systimerSSD1306_2 = 31, systimerM90EX6 = 31,
+	systimerM90EX6 = 31,
+	systimerACT_S0 = 31, systimerACT_S1 = 31, systimerACT_S2 = 31, systimerACT_S3 = 31, systimerACT_SX = 31,
+	systimerSSD1306 = 31, systimerSSD1306_2 = 31,
+	systimerTFTP = 31,
 } ;
 
 typedef struct systimer_s {
