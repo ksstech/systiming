@@ -204,21 +204,21 @@ uint64_t xSysTimerGetElapsedSecs(uint8_t TimNum) {
 	#define	systimerHDR_CLOCKS	"| # |ClockTMR| Count   | Last uSec  | Min uSec   | Max uSec   | Avg uSec   | Total uSec   |"	\
 														" Last Clocks  | Min Clocks   | Max Clocks   | Avg Clocks   | Total Clocks   |"
 
-void	vSysTimerShowHeading(int32_t Handle, const char * Header, systimer_t * pST) {
-	xdprintf(Handle, Header) ;
+void	vSysTimerShowHeading(const char * Header, systimer_t * pST) {
+	xprintf(Header) ;
 #if		(systimerSCATTER == 1)
 	for (int32_t Idx = 0; Idx < systimerSCATTER_GROUPS; ++Idx) {
-		xdprintf(Handle, "%-6u+|", Idx == 0 ? 0 :
+		xprintf("%-6u+|", Idx == 0 ? 0 :
 									Idx == 1 ? pST->SGmin + 1 :
 									Idx == systimerSCATTER_GROUPS-1 ? pST->SGmax :
 									pST->SGmin + (pST->SGfact * (Idx-1)) + 1) ;
 	}
 #endif
-	xdprintf(Handle, "\n") ;
+	xprintf("\n") ;
 }
 
-void	vSysTimerShowScatter(int32_t Handle, systimer_t * pST) {
-	for (int32_t Idx = 0; Idx < systimerSCATTER_GROUPS; xdprintf(Handle, "%7u|", pST->Group[Idx++])) ;
+void	vSysTimerShowScatter(systimer_t * pST) {
+	for (int32_t Idx = 0; Idx < systimerSCATTER_GROUPS; xprintf("%7u|", pST->Group[Idx++])) ;
 }
 
 /**
@@ -227,28 +227,28 @@ void	vSysTimerShowScatter(int32_t Handle, systimer_t * pST) {
  * @param	tMask 8bit bitmapped flag to select timer(s) to display
  * @return	none
  */
-void	vSysTimerShow(int32_t Handle, uint32_t TimerMask) {
+void	vSysTimerShow(uint32_t TimerMask) {
 	uint32_t	Mask, TimNum ;
 	systimer_t * pST ;
 	for (TimNum = 0, pST = STdata, Mask = 0x00000001; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
 		if ((TimerMask & Mask) && pST->Count) {
 			vSysTimerShowHeading(Handle, SYSTIMER_TYPE(TimNum) ? systimerHDR_CLOCKS : systimerHDR_TICKS, pST) ;
 			if (SYSTIMER_TYPE(TimNum)) {
-				xdprintf(Handle, "|%2d |%8s|%'9u|%'12llu|%'14llu|",
+				xprintf("|%2d |%8s|%'9u|%'12llu|%'14llu|",
 					TimNum,
 					pST->Tag,
 					pST->Count,
 					myCLOCKS_TO_US(pST->Sum, uint64_t) / (uint64_t) pST->Count,
 					myCLOCKS_TO_US(pST->Sum, uint64_t)) ;
-				xdprintf(Handle, "%'12u|%'12u|%'12u|%'14u|",
+				xprintf("%'12u|%'12u|%'12u|%'14u|",
 					myCLOCKS_TO_US(pST->Last, uint32_t),
 					myCLOCKS_TO_US(pST->Min, uint32_t),
 					myCLOCKS_TO_US(pST->Max, uint32_t),
 					pST->Sum / (uint64_t) pST->Count) ;
-				xdprintf(Handle, "%'16u|%'14u|%'14u|%'14u|",
+				xprintf("%'16u|%'14u|%'14u|%'14u|",
 					pST->Sum, pST->Last, pST->Min, pST->Max) ;
 			} else {
-				xdprintf(Handle, "|%2d |%8s|%'9u|%'10llu|%'12llu|",
+				xprintf("|%2d |%8s|%'9u|%'10llu|%'12llu|",
 					TimNum,
 					pST->Tag,
 					pST->Count,
@@ -274,7 +274,7 @@ void	vSysTimerShow(int32_t Handle, uint32_t TimerMask) {
 #define	systimerHDR_CLOCKS	"| # |ClockTMR| Count |Last uS|Min uS |Max uS |Avg uS |Sum uS |"	\
 												  "LastClk|Min Clk|Max Clk|Avg Clk|Sum Clk|\n"
 
-void	vSysTimerShowScatter(int32_t Handle, systimer_t * pST) {
+void	vSysTimerShowScatter(systimer_t * pST) {
 	uint32_t Rlo, Rhi ;
 	for (int32_t Idx = 0; Idx < systimerSCATTER_GROUPS; ++Idx) {
 		if (pST->Group[Idx]) {
@@ -288,7 +288,7 @@ void	vSysTimerShowScatter(int32_t Handle, systimer_t * pST) {
 				Rlo	= (Idx - 1) * (pST->SGmax - pST->SGmin) / (systimerSCATTER_GROUPS-2) + pST->SGmin ;
 				Rhi = Rlo + (pST->SGmax - pST->SGmin) / (systimerSCATTER_GROUPS-2) ;
 			}
-			xdprintf(Handle, "  #%d:%'#u->%'#u=%'#u", Idx, Rlo, Rhi, pST->Group[Idx]) ;
+			xprintf("  #%d:%'#u->%'#u=%'#u", Idx, Rlo, Rhi, pST->Group[Idx]) ;
 		}
 	}
 }
@@ -299,34 +299,34 @@ void	vSysTimerShowScatter(int32_t Handle, systimer_t * pST) {
  * @param	tMask 8bit bitmapped flag to select timer(s) to display
  * @return	none
  */
-void	vSysTimerShow(int32_t Handle, uint32_t TimerMask) {
+void	vSysTimerShow(uint32_t TimerMask) {
 	uint32_t	Mask, TimNum ;
 	systimer_t * pST ;
 	bool	HdrDone ;
 	for (TimNum = 0, pST = STdata, Mask = 0x00000001, HdrDone = 0; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
 		if ((TimerMask & Mask) && pST->Count) {
 			if (SYSTIMER_TYPE(TimNum)) {
-				if (HdrDone == 0) { xdprintf(Handle, systimerHDR_CLOCKS) ; HdrDone = 1 ; }
-				xdprintf(Handle, "|%2d |%8s|%'#7u|%'#7u|%'#7u|",
+				if (HdrDone == 0) { xprintf(systimerHDR_CLOCKS) ; HdrDone = 1 ; }
+				xprintf("|%2d |%8s|%'#7u|%'#7u|%'#7u|",
 					TimNum,
 					pST->Tag,
 					pST->Count,
 					myCLOCKS_TO_US(pST->Last, uint32_t),
 					myCLOCKS_TO_US(pST->Min, uint32_t)) ;
-				xdprintf(Handle, "%'#7u|%'#7llu|%'#7llu|%'#7u|",
+				xprintf("%'#7u|%'#7llu|%'#7llu|%'#7u|",
 					myCLOCKS_TO_US(pST->Max, uint32_t),
 					myCLOCKS_TO_US(pST->Sum, uint64_t) / (uint64_t) pST->Count,
 					myCLOCKS_TO_US(pST->Sum, uint64_t),
 					pST->Last) ;
-				xdprintf(Handle, "%'#7u|%'#7u|%'#7llu|%'#7llu|",
+				xprintf("%'#7u|%'#7u|%'#7llu|%'#7llu|",
 					pST->Min,
 					pST->Max,
 					pST->Sum / (uint64_t) pST->Count,
 					pST->Sum) ;
 #if		(systimerSCATTER == 1)
-				vSysTimerShowScatter(Handle, pST) ;
+				vSysTimerShowScatter(pST) ;
 #endif
-				xdprintf(Handle, "\n") ;
+				xprintf("\n") ;
 			}
 		}
 		Mask <<= 1 ;
@@ -335,26 +335,26 @@ void	vSysTimerShow(int32_t Handle, uint32_t TimerMask) {
 	for (TimNum = 0, pST = STdata, Mask = 0x00000001, HdrDone = 0; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
 		if ((TimerMask & Mask) && pST->Count) {
 			if (!SYSTIMER_TYPE(TimNum)) {
-				if (HdrDone == 0) { xdprintf(Handle, systimerHDR_TICKS) ; HdrDone = 1 ; }
-				xdprintf(Handle, "|%2d |%8s|%'#7u|%'#7u|%'#7u|",
+				if (HdrDone == 0) { xprintf(systimerHDR_TICKS) ; HdrDone = 1 ; }
+				xprintf("|%2d |%8s|%'#7u|%'#7u|%'#7u|",
 					TimNum,
 					pST->Tag,
 					pST->Count,
 					myTICKS_TO_MS(pST->Last, uint32_t),
 					myTICKS_TO_MS(pST->Min, uint32_t)) ;
-				xdprintf(Handle, "%'#7u|%'#7llu|%'#7llu|",
+				xprintf("%'#7u|%'#7llu|%'#7llu|",
 					myTICKS_TO_MS(pST->Max, uint32_t),
 					myTICKS_TO_MS(pST->Sum, uint64_t) / (uint64_t) pST->Count,
 					myTICKS_TO_MS(pST->Sum, uint64_t)) ;
 #if		(systimerSCATTER == 1)
-				vSysTimerShowScatter(Handle, pST) ;
+				vSysTimerShowScatter(pST) ;
 #endif
-				xdprintf(Handle, "\n") ;
+				xprintf("\n") ;
 			}
 		}
 		Mask <<= 1 ;
 	}
-	xdprintf(Handle, "\n") ;
+	xprintf("\n") ;
 }
 
 #endif
@@ -393,7 +393,7 @@ void	vSysTimingTestSet(uint32_t Type, const char * Tag, uint32_t Delay) {
 		vTaskDelay(pdMS_TO_TICKS((Delay * Steps) + 1)) ;
 		for (uint32_t Count = 0; Count < systimerMAX_NUM; xSysTimerStop(Count++)) ;
 	}
-	vSysTimerShow(1, 0xFFFF) ;
+	vSysTimerShow(0xFFFF) ;
 }
 
 void	vSysTimingTest(void) {

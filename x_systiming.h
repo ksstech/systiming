@@ -41,8 +41,8 @@ extern "C" {
 #define	IF_SYSTIMER_START(t,y)					if (t) xSysTimerStart(y)
 #define	IF_SYSTIMER_STOP(t,y)					if (t) xSysTimerStop(y)
 
-#define	IF_SYSTIMER_SHOW(t,h,m)					if (t) vSysTimerShow(h, m)
-#define	IF_SYSTIMER_SHOW_NUM(t,h,n)				if (t) vSysTimerShow(h, 1 << n)
+#define	IF_SYSTIMER_SHOW(t,m)					if (t) vSysTimerShow(m)
+#define	IF_SYSTIMER_SHOW_NUM(t,n)				if (t) vSysTimerShow(1 << n)
 
 #define	IF_SYSTIMER_RESET(t,m,T,Tag, ...)		if (t) vSysTimerReset(m,T,Tag, ##__VA_ARGS__ )
 #define	IF_SYSTIMER_RESET_NUM(t,n,T,Tag, ...)	if (t) vSysTimerReset(1UL<<n,T,Tag, ##__VA_ARGS__  )
@@ -97,7 +97,7 @@ uint64_t xSysTimerGetElapsedMicros(uint8_t TimNum) ;
 uint64_t xSysTimerGetElapsedMillis(uint8_t TimNum) ;
 uint64_t xSysTimerGetElapsedSecs(uint8_t TimNum) ;
 
-void	vSysTimerShow(int32_t Handle, uint32_t TimerMask) ;
+void	vSysTimerShow(uint32_t TimerMask) ;
 
 uint32_t xClockDelayUsec(uint32_t uSec) ;
 uint32_t xClockDelayMsec(uint32_t mSec) ;
