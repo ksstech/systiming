@@ -32,8 +32,6 @@
 #include	"FreeRTOS_Support.h"
 #include	<string.h>
 
-//temporary
-#include	"esp_panic.h"
 #define	debugFLAG					0xC000
 
 #define	debugPARAM					(debugFLAG & 0x4000)
