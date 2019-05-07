@@ -58,7 +58,7 @@ enum {
 //	systimerFOTA,
 //	systimerSLOG,
 //	systimerPCA9555,
-//	systimerDS2482,
+	systimerDS2482A, systimerDS2482B, systimerDS2482C,
 //	systimerM90EX6,
 //	systimerACT_S0, systimerACT_S1, systimerACT_S2, systimerACT_S3, systimerACT_SX,
 //	systimerSSD1306, systimerSSD1306_2,
@@ -69,12 +69,14 @@ enum {
 	systimerFOTA = 31,
 	systimerSLOG = 31,
 	systimerPCA9555 = 31,
-	systimerDS2482 = 31,
+//	systimerDS2482A = 31, systimerDS2482B = 31, systimerDS2482C = 31,
 	systimerM90EX6 = 31,
 	systimerACT_S0 = 31, systimerACT_S1 = 31, systimerACT_S2 = 31, systimerACT_S3 = 31, systimerACT_SX = 31,
 	systimerSSD1306 = 31, systimerSSD1306_2 = 31,
 	systimerTFTP = 31,
 } ;
+
+// ######################################### Data structures #######################################
 
 typedef struct systimer_s {
 	const char * Tag ;
@@ -85,6 +87,8 @@ typedef struct systimer_s {
 	uint32_t	Group[systimerSCATTER_GROUPS] ;
 #endif
 } systimer_t ;
+
+// ######################################### Public functions ######################################
 
 void	vSysTimerReset(uint32_t TimerMask, bool Type, const char * Tag, ...) ;
 uint32_t xSysTimerStart(uint8_t tNumber) ;
