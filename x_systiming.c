@@ -305,8 +305,9 @@ void	vSysTimerShow(uint32_t TimerMask) {
 		if ((TimerMask & Mask) && pST->Count) {
 			if (SYSTIMER_TYPE(TimNum)) {
 				if (HdrDone == 0) { xprintf(systimerHDR_CLOCKS) ; HdrDone = 1 ; }
-				xprintf("|%2d |%8s|%'#7u|%'#7u|%'#7u|",
+				xprintf("|%2d%c|%8s|%'#7u|%'#7u|%'#7u|",
 					TimNum,
+					STstat & (1UL << TimNum) ? 'R' : ' ',
 					pST->Tag,
 					pST->Count,
 					myCLOCKS_TO_US(pST->Last, uint32_t),
@@ -334,8 +335,9 @@ void	vSysTimerShow(uint32_t TimerMask) {
 		if ((TimerMask & Mask) && pST->Count) {
 			if (!SYSTIMER_TYPE(TimNum)) {
 				if (HdrDone == 0) { xprintf(systimerHDR_TICKS) ; HdrDone = 1 ; }
-				xprintf("|%2d |%8s|%'#7u|%'#7u|%'#7u|",
+				xprintf("|%2d%c|%8s|%'#7u|%'#7u|%'#7u|",
 					TimNum,
+					STstat & (1UL << TimNum) ? 'R' : ' ',
 					pST->Tag,
 					pST->Count,
 					myTICKS_TO_MS(pST->Last, uint32_t),
