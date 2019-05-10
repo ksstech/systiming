@@ -30,9 +30,10 @@
 #include	"x_systiming.h"
 
 #include	"FreeRTOS_Support.h"
+
 #include	<string.h>
 
-#define	debugFLAG					0xC000
+#define	debugFLAG					0x0000
 
 #define	debugPARAM					(debugFLAG & 0x4000)
 #define	debugRESULT					(debugFLAG & 0x8000)
@@ -59,34 +60,56 @@ static systimer_t	STdata[systimerMAX_NUM] = { 0 } ;
  * Pin the task to a specific core and the problem should go away.
  */
 
+//			if (TimNum == systimerMQTT_TX) 	{ esp_clear_watchpoint(0) ; }
+//			if (TimNum == systimerMQTT_TX)	{ esp_set_watchpoint(0, &pST->Tag, sizeof(const char *), ESP_WATCHPOINT_STORE) ; }
+
 /**
- * vSysTimerReset() -
+ * vSysTimerResetCounters() -
+ * @param TimNum
+ */
+void	vSysTimerResetCounters(uint8_t TimNum) {
+	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM) ;
+	STstat		&= ~(1UL << TimNum) ;					// clear active status ie STOP
+	systimer_t *pST	= &STdata[TimNum] ;
+	pST->Sum	= 0ULL ;
+	pST->Min	= UINT32_MAX ;
+	pST->Last	= pST->Count	= pST->Max	= 0 ;
+#if		(systimerSCATTER == 1)
+	// SGmin & SGmax not cleared
+	memset(&pST->Group, 0, SIZEOF_MEMBER(systimer_t, Group)) ;
+#endif
+}
+
+void	vSysTimerInit(uint8_t TimNum, bool Type, const char * Tag, ...) {
+	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM) ;
+	systimer_t *pST	= &STdata[TimNum] ;
+	pST->Tag	= Tag ;
+	if (Type) {
+		STtype |= (1UL << TimNum) ;						// mark as CLOCK type
+	} else {
+		STtype &= ~(1UL << TimNum) ;					// mark as TICK type
+	}
+	vSysTimerResetCounters(TimNum) ;
+#if		(systimerSCATTER == 1)
+    va_list vaList ;
+    va_start(vaList, Tag) ;
+	pST->SGmin	= va_arg(vaList, uint32_t) ;			// Min
+	pST->SGmax	= va_arg(vaList, uint32_t) ;			// Max ;
+	IF_myASSERT(debugPARAM, pST->SGmin < pST->SGmax) ;
+	va_end(vaList) ;
+#endif
+}
+
+/**
+ * vSysTimerResetMask() -
  * @param TimerMask
  */
-void	vSysTimerReset(uint32_t TimerMask, bool Type, const char * Tag, ...) {
+void	vSysTimerResetMask(uint32_t TimerMask) {
 	uint32_t	mask = 0x00000001 ;
 	systimer_t *pST	= STdata ;
 	for (uint8_t TimNum = 0; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
 		if (TimerMask & mask) {
-//			if (TimNum == systimerMQTT_TX) 	{ esp_clear_watchpoint(0) ; }
-			memset(pST, 0, sizeof(systimer_t)) ;
-			pST->Tag	= Tag ;
-//			if (TimNum == systimerMQTT_TX)	{ esp_set_watchpoint(0, &pST->Tag, sizeof(const char *), ESP_WATCHPOINT_STORE) ; }
-			pST->Min	= UINT32_MAX ;
-			STstat		&= ~(1UL << TimNum) ;			// clear active status ie STOP
-			if (Type) {
-				STtype |= (1UL << TimNum) ;				// mark as CLOCK type
-			} else {
-				STtype &= ~(1UL << TimNum) ;			// mark as TICK type
-			}
-#if		(systimerSCATTER == 1)
-		    va_list vaList ;
-		    va_start(vaList, Tag) ;
-			pST->SGmin	= va_arg(vaList, uint32_t) ;	// Min
-			pST->SGmax	= va_arg(vaList, uint32_t) ;	// Max ;
-			IF_myASSERT(debugPARAM, pST->SGmin < pST->SGmax) ;
-			va_end(vaList) ;
-#endif
+			vSysTimerResetCounters(TimNum) ;
 		}
 		mask <<= 1 ;
 	}
@@ -113,12 +136,14 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 	uint32_t tNow	= SYSTIMER_TYPE(TimNum) ? GET_CLOCK_COUNTER() : xTaskGetTickCount() ;
 	STstat			&= ~(1UL << TimNum) ;				// mark as stopped
 	systimer_t *pST	= &STdata[TimNum] ;
-	if (SYSTIMER_TYPE(TimNum)) {						// CLOCK type ?
-		pST->Last	= tNow > pST->Last ? tNow - pST->Last : tNow + (0xFFFFFFFF - pST->Last) ;
-	} else {											// TICK type...
-		pST->Last	= tNow - pST->Last ;				// very unlikely wrap
+	uint32_t tElap	= tNow - pST->Last ;
+	// Since adjustments are made to the CCOUNT causing discrepancies between readings
+	// from different core, we have to filter out wildcard values
+	if (tElap > 0xC0000000) {
+		return 0 ;
 	}
-	pST->Sum		+= pST->Last ;
+	pST->Last		= tElap ;
+	pST->Sum		+= tElap ;
 	pST->Count++ ;
 	// update Min & Max if required
 	if (pST->Min > pST->Last) {
@@ -136,7 +161,7 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 	} else {
 		Idx = 1 + ((pST->Last - pST->SGmin) * (systimerSCATTER_GROUPS-2) ) / (pST->SGmax - pST->SGmin) ;
 	}
-	IF_CPRINT(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER_GROUPS-1, int32_t), "lo=%u hi=%u last=%u idx=%d\n", pST->SGmin, pST->SGmax, pST->Last, Idx) ;
+	IF_CPRINT(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER_GROUPS-1, int32_t), "l=%u h=%u n=%u i=%d\n", pST->SGmin, pST->SGmax, pST->Last, Idx) ;
 	IF_myASSERT(debugRESULT, INRANGE(0, Idx, systimerSCATTER_GROUPS-1, int32_t)) ;
 	++pST->Group[Idx] ;
 #endif
@@ -273,8 +298,8 @@ void	vSysTimerShow(uint32_t TimerMask) {
 												  "LastClk|Min Clk|Max Clk|Avg Clk|Sum Clk|\n"
 
 void	vSysTimerShowScatter(systimer_t * pST) {
-	uint32_t Rlo, Rhi ;
 	for (int32_t Idx = 0; Idx < systimerSCATTER_GROUPS; ++Idx) {
+		uint32_t Rlo, Rhi ;
 		if (pST->Group[Idx]) {
 			if (Idx == 0) {
 				Rlo = UINT32_MIN ;
@@ -301,6 +326,31 @@ void	vSysTimerShow(uint32_t TimerMask) {
 	uint32_t	Mask, TimNum ;
 	systimer_t * pST ;
 	bool	HdrDone ;
+	// first handle the simpler tick timers
+	for (TimNum = 0, pST = STdata, Mask = 0x00000001, HdrDone = 0; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
+		if ((TimerMask & Mask) && pST->Count) {
+			if (!SYSTIMER_TYPE(TimNum)) {
+				if (HdrDone == 0) { xprintf(systimerHDR_TICKS) ; HdrDone = 1 ; }
+				xprintf("|%2d%c|%8s|%'#7u|%'#7u|%'#7u|",
+					TimNum,
+					STstat & (1UL << TimNum) ? 'R' : ' ',
+					pST->Tag,
+					pST->Count,
+					myTICKS_TO_MS(pST->Last, uint32_t),
+					myTICKS_TO_MS(pST->Min, uint32_t)) ;
+				xprintf("%'#7u|%'#7llu|%'#7llu|",
+					myTICKS_TO_MS(pST->Max, uint32_t),
+					myTICKS_TO_MS(pST->Sum, uint64_t) / (uint64_t) pST->Count,
+					myTICKS_TO_MS(pST->Sum, uint64_t)) ;
+#if		(systimerSCATTER == 1)
+				vSysTimerShowScatter(pST) ;
+#endif
+				xprintf("\n") ;
+			}
+		}
+		Mask <<= 1 ;
+	}
+	// Now handle the clock timers
 	for (TimNum = 0, pST = STdata, Mask = 0x00000001, HdrDone = 0; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
 		if ((TimerMask & Mask) && pST->Count) {
 			if (SYSTIMER_TYPE(TimNum)) {
@@ -322,30 +372,6 @@ void	vSysTimerShow(uint32_t TimerMask) {
 					pST->Max,
 					pST->Sum / (uint64_t) pST->Count,
 					pST->Sum) ;
-#if		(systimerSCATTER == 1)
-				vSysTimerShowScatter(pST) ;
-#endif
-				xprintf("\n") ;
-			}
-		}
-		Mask <<= 1 ;
-	}
-
-	for (TimNum = 0, pST = STdata, Mask = 0x00000001, HdrDone = 0; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
-		if ((TimerMask & Mask) && pST->Count) {
-			if (!SYSTIMER_TYPE(TimNum)) {
-				if (HdrDone == 0) { xprintf(systimerHDR_TICKS) ; HdrDone = 1 ; }
-				xprintf("|%2d%c|%8s|%'#7u|%'#7u|%'#7u|",
-					TimNum,
-					STstat & (1UL << TimNum) ? 'R' : ' ',
-					pST->Tag,
-					pST->Count,
-					myTICKS_TO_MS(pST->Last, uint32_t),
-					myTICKS_TO_MS(pST->Min, uint32_t)) ;
-				xprintf("%'#7u|%'#7llu|%'#7llu|",
-					myTICKS_TO_MS(pST->Max, uint32_t),
-					myTICKS_TO_MS(pST->Sum, uint64_t) / (uint64_t) pST->Count,
-					myTICKS_TO_MS(pST->Sum, uint64_t)) ;
 #if		(systimerSCATTER == 1)
 				vSysTimerShowScatter(pST) ;
 #endif
@@ -386,20 +412,25 @@ uint32_t xClockDelayMsec(uint32_t mSec) {
 
 // ##################################### functional tests ##########################################
 
+#define	systimerTEST_DELAY			0
+#define	systimerTEST_TICKS			0
+#define	systimerTEST_CLOCKS			0
+
 void	vSysTimingTestSet(uint32_t Type, const char * Tag, uint32_t Delay) {
-	vSysTimerReset(0xFFFFFFFF, Type, Tag, myMS_TO_TICKS(Delay), myMS_TO_TICKS(Delay * systimerSCATTER_GROUPS)) ;
+	for (uint8_t Idx = 0; Idx < systimerMAX_NUM; ++Idx) {
+		vSysTimerInit(Idx, Type, Tag, myMS_TO_TICKS(Delay), myMS_TO_TICKS(Delay * systimerSCATTER_GROUPS)) ;
+	}
 	for (uint32_t Steps = 0; Steps <= systimerSCATTER_GROUPS; ++Steps) {
 		for (uint32_t Count = 0; Count < systimerMAX_NUM; xSysTimerStart(Count++)) ;
 		vTaskDelay(pdMS_TO_TICKS((Delay * Steps) + 1)) ;
 		for (uint32_t Count = 0; Count < systimerMAX_NUM; xSysTimerStop(Count++)) ;
 	}
-	vSysTimerShow(0xFFFF) ;
+	vSysTimerShow(0xFFFFFFFF) ;
 }
 
 void	vSysTimingTest(void) {
-#if 0
+#if		(systimerTEST_DELAY == 1)						// Test the uSec delays
 	uint32_t	uCount, uSecs ;
-	// Test the uSec delays
 	uCount	= GET_CLOCK_COUNTER() ;
 	uSecs	= xClockDelayUsec(100) ;
 	SL_DBG("Delay=%'u uS", (uSecs - uCount) / configCLOCKS_PER_USEC) ;
@@ -412,15 +443,13 @@ void	vSysTimingTest(void) {
 	uSecs	= xClockDelayUsec(10000) ;
 	SL_DBG("Delay=%'u uS", (uSecs - uCount) / configCLOCKS_PER_USEC) ;
 #endif
-#if 1
-	// Test TICK timers & Scatter groups
+#if 	(systimerTEST_TICKS == 1)						// Test TICK timers & Scatter groups
 	vSysTimingTestSet(systimerTICKS, "TICKS", 1) ;
 	vSysTimingTestSet(systimerTICKS, "TICKS", 10) ;
 	vSysTimingTestSet(systimerTICKS, "TICKS", 100) ;
 	vSysTimingTestSet(systimerTICKS, "TICKS", 1000) ;
 #endif
-#if 0
-	// Test CLOCK timers & Scatter groups
+#if 	(systimerTEST_CLOCKS == 1)						// Test CLOCK timers & Scatter groups
 	vSysTimingTestSet(systimerCLOCKS, "CLOCKS", 1) ;
 	vSysTimingTestSet(systimerCLOCKS, "CLOCKS", 10) ;
 	vSysTimingTestSet(systimerCLOCKS, "CLOCKS", 100) ;

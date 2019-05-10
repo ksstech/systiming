@@ -38,14 +38,13 @@ extern "C" {
 #define	systimerSCATTER_GROUPS					10			// number of scatter graph groupings
 #define	systimerSCATTER_HDR_SHOW				0			// 0=no scatter heading ie intelligent display
 
-#define	IF_SYSTIMER_START(t,y)					if (t) xSysTimerStart(y)
-#define	IF_SYSTIMER_STOP(t,y)					if (t) xSysTimerStop(y)
+#define	IF_SYSTIMER_INIT(T,n,t,tag, ...)		if (T) vSysTimerInit(n,t,tag, ##__VA_ARGS__)
+#define	IF_SYSTIMER_START(T,y)					if (T) xSysTimerStart(y)
+#define	IF_SYSTIMER_STOP(T,y)					if (T) xSysTimerStop(y)
+#define	IF_SYSTIMER_RESET(T,y)					if (T) xSysTimerReset(y)
 
-#define	IF_SYSTIMER_SHOW(t,m)					if (t) vSysTimerShow(m)
-#define	IF_SYSTIMER_SHOW_NUM(t,n)				if (t) vSysTimerShow(1 << n)
-
-#define	IF_SYSTIMER_RESET(t,m,T,Tag, ...)		if (t) vSysTimerReset(m,T,Tag, ##__VA_ARGS__ )
-#define	IF_SYSTIMER_RESET_NUM(t,n,T,Tag, ...)	if (t) vSysTimerReset(1UL<<n,T,Tag, ##__VA_ARGS__  )
+#define	IF_SYSTIMER_SHOW(T,m)					if (T) vSysTimerShow(m)
+#define	IF_SYSTIMER_SHOW_NUM(T,n)				if (T) vSysTimerShow(1 << n)
 
 // ################################# Process timer support #########################################
 
@@ -57,10 +56,10 @@ enum {
 //	systimerHTTP,
 //	systimerFOTA,
 //	systimerSLOG,
-//	systimerPCA9555,
+	systimerPCA9555,
 	systimerDS2482A, systimerDS2482B, systimerDS2482C,
 //	systimerM90EX6,
-//	systimerACT_S0, systimerACT_S1, systimerACT_S2, systimerACT_S3, systimerACT_SX,
+	systimerACT_S0, systimerACT_S1, systimerACT_S2, systimerACT_S3, systimerACT_SX,
 //	systimerSSD1306, systimerSSD1306_2,
 //	systimerTFTP,										// TFTP task execution timing...
 	systimerMAX_NUM,									// last in list, define all required above here
@@ -68,10 +67,10 @@ enum {
 	systimerHTTP = 31,
 	systimerFOTA = 31,
 	systimerSLOG = 31,
-	systimerPCA9555 = 31,
+//	systimerPCA9555 = 31,
 //	systimerDS2482A = 31, systimerDS2482B = 31, systimerDS2482C = 31,
 	systimerM90EX6 = 31,
-	systimerACT_S0 = 31, systimerACT_S1 = 31, systimerACT_S2 = 31, systimerACT_S3 = 31, systimerACT_SX = 31,
+//	systimerACT_S0 = 31, systimerACT_S1 = 31, systimerACT_S2 = 31, systimerACT_S3 = 31, systimerACT_SX = 31,
 	systimerSSD1306 = 31, systimerSSD1306_2 = 31,
 	systimerTFTP = 31,
 } ;
@@ -90,9 +89,12 @@ typedef struct systimer_s {
 
 // ######################################### Public functions ######################################
 
-void	vSysTimerReset(uint32_t TimerMask, bool Type, const char * Tag, ...) ;
-uint32_t xSysTimerStart(uint8_t tNumber) ;
-uint32_t xSysTimerStop(uint8_t tNumber) ;
+void	vSysTimerResetCounters(uint8_t TimNum) ;
+void	vSysTimerInit(uint8_t TimNum, bool Type, const char * Tag, ...) ;
+void	vSysTimerResetMask(uint32_t TimerMask) ;
+
+uint32_t xSysTimerStart(uint8_t TimNum) ;
+uint32_t xSysTimerStop(uint8_t TimNum) ;
 uint32_t xSysTimerIsRunning(uint8_t TimNum) ;
 bool	bSysTimerGetStatus(uint8_t TimNum, systimer_t *) ;
 
