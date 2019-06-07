@@ -78,7 +78,7 @@ enum {
 
 // ######################################### Data structures #######################################
 
-typedef struct systimer_s {
+typedef struct __attribute__((packed)) systimer_s {
 	const char * Tag ;
 	uint64_t	Sum ;
 	uint32_t	Last, Count, Min, Max ;
@@ -87,6 +87,8 @@ typedef struct systimer_s {
 	uint32_t	Group[systimerSCATTER_GROUPS] ;
 #endif
 } systimer_t ;
+
+DUMB_STATIC_ASSERT(sizeof(systimer_t) == 76) ;
 
 // ######################################### Public functions ######################################
 
