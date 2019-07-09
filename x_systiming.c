@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-18 Andre M Maree / KSS Technologies (Pty) Ltd.
+ * Copyright 2014-19 Andre M Maree / KSS Technologies (Pty) Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -15,7 +15,6 @@
  * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
  */
 
 /*
@@ -59,9 +58,6 @@ static systimer_t	STdata[systimerMAX_NUM] = { 0 } ;
  * where measurements are started, stopped or reported from NOT RUNNING on a SPECIFIC core
  * Pin the task to a specific core and the problem should go away.
  */
-
-//			if (TimNum == systimerMQTT_TX) 	{ esp_clear_watchpoint(0) ; }
-//			if (TimNum == systimerMQTT_TX)	{ esp_set_watchpoint(0, &pST->Tag, sizeof(const char *), ESP_WATCHPOINT_STORE) ; }
 
 /**
  * vSysTimerResetCounters() -
@@ -137,11 +133,13 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 	STstat			&= ~(1UL << TimNum) ;				// mark as stopped
 	systimer_t *pST	= &STdata[TimNum] ;
 	uint32_t tElap	= tNow - pST->Last ;
+
 	// Since adjustments are made to the CCOUNT causing discrepancies between readings
-	// from different core, we have to filter out wildcard values
-	if (tElap > 0xC0000000) {
+	// from different core, we have to filter out wild card values
+	if (SYSTIMER_TYPE(TimNum) && (myCLOCKS_TO_US(tElap,uint32_t) > MILLION)) {
 		return 0 ;
 	}
+
 	pST->Last		= tElap ;
 	pST->Sum		+= tElap ;
 	pST->Count++ ;
@@ -223,26 +221,24 @@ uint64_t xSysTimerGetElapsedSecs(uint8_t TimNum) {
 }
 
 #if 	(systimerSCATTER_HDR_SHOW == 1)
-	#define	systimerHDR_TICKS	"| # |TickTMR | Count   | Last mSec| Min mSec | Max mSec | Avg mSec | Total mSec |"
-	#define	systimerHDR_CLOCKS	"| # |ClockTMR| Count   | Last uSec  | Min uSec   | Max uSec   | Avg uSec   | Total uSec   |"	\
-														" Last Clocks  | Min Clocks   | Max Clocks   | Avg Clocks   | Total Clocks   |"
+#define	systimerHDR_TICKS	"| # |TickTMR | Count   | Last mSec| Min mSec | Max mSec | Avg mSec | Total mSec |"
+#define	systimerHDR_CLOCKS	"| # |ClockTMR| Count   | Last uSec  | Min uSec   | Max uSec   | Avg uSec   | Total uSec   |"	\
+													" Last Clocks  | Min Clocks   | Max Clocks   | Avg Clocks   | Total Clocks   |"
 
 void	vSysTimerShowHeading(const char * Header, systimer_t * pST) {
 	xprintf(Header) ;
-#if		(systimerSCATTER == 1)
+	#if		(systimerSCATTER == 1)
 	for (int32_t Idx = 0; Idx < systimerSCATTER_GROUPS; ++Idx) {
 		xprintf("%-6u+|", Idx == 0 ? 0 :
 									Idx == 1 ? pST->SGmin + 1 :
 									Idx == systimerSCATTER_GROUPS-1 ? pST->SGmax :
 									pST->SGmin + (pST->SGfact * (Idx-1)) + 1) ;
 	}
-#endif
+	#endif
 	xprintf("\n") ;
 }
 
-void	vSysTimerShowScatter(systimer_t * pST) {
-	for (int32_t Idx = 0; Idx < systimerSCATTER_GROUPS; xprintf("%7u|", pST->Group[Idx++])) ;
-}
+void	vSysTimerShowScatter(systimer_t * pST) { for (int32_t Idx = 0; Idx < systimerSCATTER_GROUPS; xprintf("%7u|", pST->Group[Idx++])) ; }
 
 /**
  * vSysTimerShow(tMask) - display the current value(s) of the specified timer(s)
@@ -282,24 +278,20 @@ void	vSysTimerShow(uint32_t TimerMask) {
 					pST->Min,
 					pST->Max) ;
 			}
-#if		(systimerSCATTER == 1)
-			vSysTimerShowScatter(Handle, pST) ;
-#endif
+			IF_EXEC_1(systimerSCATTER == 1, vSysTimerShowScatter, pST) ;
 			xdprintf(Handle, "\n\n") ;
 		}
 		Mask <<= 1 ;
 	}
 }
-
 #else
 
-#define	systimerHDR_TICKS	"| # |TickTMR | Count |Last mS|Min mS |Max mS |Avg mS |Sum mS |\n"
-#define	systimerHDR_CLOCKS	"| # |ClockTMR| Count |Last uS|Min uS |Max uS |Avg uS |Sum uS |"	\
-												  "LastClk|Min Clk|Max Clk|Avg Clk|Sum Clk|\n"
+#define	systimerHDR_TICKS	"| # |TickTMR | Count |Last mS|Min mS |Max mS |Avg mS |Sum mS |"
+#define	systimerHDR_CLOCKS	"| # |ClockTMR| Count |Last uS|Min uS |Max uS |Avg uS |Sum uS |LastClk|Min Clk|Max Clk|Avg Clk|Sum Clk|"
 
 void	vSysTimerShowScatter(systimer_t * pST) {
+	uint32_t Rlo, Rhi ;
 	for (int32_t Idx = 0; Idx < systimerSCATTER_GROUPS; ++Idx) {
-		uint32_t Rlo, Rhi ;
 		if (pST->Group[Idx]) {
 			if (Idx == 0) {
 				Rlo = UINT32_MIN ;
@@ -330,7 +322,10 @@ void	vSysTimerShow(uint32_t TimerMask) {
 	for (TimNum = 0, pST = STdata, Mask = 0x00000001, HdrDone = 0; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
 		if ((TimerMask & Mask) && pST->Count) {
 			if (!SYSTIMER_TYPE(TimNum)) {
-				if (HdrDone == 0) { xprintf(systimerHDR_TICKS) ; HdrDone = 1 ; }
+				if (HdrDone == 0) {
+					xprintf("%C%s%C\n", xpfSGR(colourFG_CYAN, 0, 0, 0), systimerHDR_TICKS, attrRESET) ;
+					HdrDone = 1 ;
+				}
 				xprintf("|%2d%c|%8s|%'#7u|%'#7u|%'#7u|",
 					TimNum,
 					STstat & (1UL << TimNum) ? 'R' : ' ',
@@ -342,9 +337,7 @@ void	vSysTimerShow(uint32_t TimerMask) {
 					myTICKS_TO_MS(pST->Max, uint32_t),
 					myTICKS_TO_MS(pST->Sum, uint64_t) / (uint64_t) pST->Count,
 					myTICKS_TO_MS(pST->Sum, uint64_t)) ;
-#if		(systimerSCATTER == 1)
-				vSysTimerShowScatter(pST) ;
-#endif
+				IF_EXEC_1(systimerSCATTER == 1, vSysTimerShowScatter, pST) ;
 				xprintf("\n") ;
 			}
 		}
@@ -354,7 +347,10 @@ void	vSysTimerShow(uint32_t TimerMask) {
 	for (TimNum = 0, pST = STdata, Mask = 0x00000001, HdrDone = 0; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
 		if ((TimerMask & Mask) && pST->Count) {
 			if (SYSTIMER_TYPE(TimNum)) {
-				if (HdrDone == 0) { xprintf(systimerHDR_CLOCKS) ; HdrDone = 1 ; }
+				if (HdrDone == 0) {
+					xprintf("%C%s%C\n", xpfSGR(colourFG_CYAN, 0, 0, 0), systimerHDR_CLOCKS, attrRESET) ;
+					HdrDone = 1 ;
+				}
 				xprintf("|%2d%c|%8s|%'#7u|%'#7u|%'#7u|",
 					TimNum,
 					STstat & (1UL << TimNum) ? 'R' : ' ',
@@ -372,9 +368,7 @@ void	vSysTimerShow(uint32_t TimerMask) {
 					pST->Max,
 					pST->Sum / (uint64_t) pST->Count,
 					pST->Sum) ;
-#if		(systimerSCATTER == 1)
-				vSysTimerShowScatter(pST) ;
-#endif
+				IF_EXEC_1(systimerSCATTER == 1, vSysTimerShowScatter, pST) ;
 				xprintf("\n") ;
 			}
 		}
@@ -382,9 +376,7 @@ void	vSysTimerShow(uint32_t TimerMask) {
 	}
 	xprintf("\n") ;
 }
-
 #endif
-
 
 // ################################## MCU Clock cycle delay support ################################
 
