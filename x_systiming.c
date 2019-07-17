@@ -25,6 +25,7 @@
 #include	"hal_timer.h"
 
 #include	"x_debug.h"
+#include	"x_printf.h"
 #include	"x_syslog.h"
 #include	"x_systiming.h"
 
@@ -41,9 +42,12 @@
 
 #define	SYSTIMER_TYPE(x)	(STtype & (1UL << x))
 
-static uint32_t		STstat = 0 ;
-static uint32_t		STtype = 0 ;
 static systimer_t	STdata[systimerMAX_NUM] = { 0 } ;
+static uint32_t		STstat = 0, STtype = 0 ;
+#if		(ESP32_PLATFORM == 1) && !defined(CONFIG_FREERTOS_UNICORE)
+	static uint32_t	STcore = 0 ;
+	uint32_t		STskip = 0 ;
+#endif
 
 /* Functions rely on the GET_CLOCK_COUNTER definition being present and correct in "hal_timer.h"
  * Maximum period that can be delayed or measured is UINT32_MAX clock cycles.
@@ -60,20 +64,38 @@ static systimer_t	STdata[systimerMAX_NUM] = { 0 } ;
  */
 
 /**
- * vSysTimerResetCounters() -
- * @param TimNum
+ * vSysTimerResetCounters() -Reset all the timer values for a single timer #
+ * @brief 	This function does NOT reset SGmin & SGmax. To reset Min/Max use vSysTimerInit()
+ * @brief	which allows for the type to be changed as well as specifying new Min/Max values.
+ * @param 	TimNum
  */
 void	vSysTimerResetCounters(uint8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM) ;
-	STstat		&= ~(1UL << TimNum) ;					// clear active status ie STOP
 	systimer_t *pST	= &STdata[TimNum] ;
-	pST->Sum	= 0ULL ;
-	pST->Min	= UINT32_MAX ;
-	pST->Last	= pST->Count	= pST->Max	= 0 ;
+	STstat			&= ~(1UL << TimNum) ;					// clear active status ie STOP
+	pST->Sum		= 0ULL ;
+	pST->Min		= UINT32_MAX ;
+	pST->Last		= pST->Count	= pST->Max	= 0 ;
 #if		(systimerSCATTER == 1)
-	// SGmin & SGmax not cleared
 	memset(&pST->Group, 0, SIZEOF_MEMBER(systimer_t, Group)) ;
 #endif
+}
+
+/**
+ * vSysTimerResetCountersMask() - Reset all the timer values for 1 or more timers
+ * @brief 	This function does NOT reset SGmin & SGmax. To reset Min/Max use vSysTimerInit()
+ * @brief	which allows for the type to be changed as well as specifying new Min/Max values.
+ * @param	TimerMask
+ */
+void	vSysTimerResetCountersMask(uint32_t TimerMask) {
+	uint32_t mask 	= 0x00000001 ;
+	systimer_t *pST	= STdata ;
+	for (uint8_t TimNum = 0; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
+		if (TimerMask & mask) {
+			vSysTimerResetCounters(TimNum) ;
+		}
+		mask <<= 1 ;
+	}
 }
 
 void	vSysTimerInit(uint8_t TimNum, bool Type, const char * Tag, ...) {
@@ -97,28 +119,20 @@ void	vSysTimerInit(uint8_t TimNum, bool Type, const char * Tag, ...) {
 }
 
 /**
- * vSysTimerResetMask() -
- * @param TimerMask
- */
-void	vSysTimerResetMask(uint32_t TimerMask) {
-	uint32_t	mask = 0x00000001 ;
-	systimer_t *pST	= STdata ;
-	for (uint8_t TimNum = 0; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
-		if (TimerMask & mask) {
-			vSysTimerResetCounters(TimNum) ;
-		}
-		mask <<= 1 ;
-	}
-}
-
-/**
  * xSysTimerStart() - start the specified timer
  * @param 		TimNum
  * @return		current timer value based on type (CLOCKs or TICKs)
  */
 uint32_t xSysTimerStart(uint8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM) ;
-	STstat	|= (1UL << TimNum) ;				// Mark as started & running
+#if		(ESP32_PLATFORM == 1) && !defined(CONFIG_FREERTOS_UNICORE)
+	if (xPortGetCoreID()) {
+		STcore |= (1UL << TimNum) ;						// Running on Core 1
+	} else {
+		STcore &= ~(1UL << TimNum) ;					// Running on Core 0
+	}
+#endif
+	STstat	|= (1UL << TimNum) ;						// Mark as started & running
 	return (STdata[TimNum].Last = SYSTIMER_TYPE(TimNum) ? GET_CLOCK_COUNTER() : xTaskGetTickCount()) ;
 }
 
@@ -129,17 +143,22 @@ uint32_t xSysTimerStart(uint8_t TimNum) {
  */
 uint32_t xSysTimerStop(uint8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM) ;
-	uint32_t tNow	= SYSTIMER_TYPE(TimNum) ? GET_CLOCK_COUNTER() : xTaskGetTickCount() ;
-	STstat			&= ~(1UL << TimNum) ;				// mark as stopped
-	systimer_t *pST	= &STdata[TimNum] ;
-	uint32_t tElap	= tNow - pST->Last ;
+	uint32_t tNow		= SYSTIMER_TYPE(TimNum) ? GET_CLOCK_COUNTER() : xTaskGetTickCount() ;
+	STstat				&= ~(1UL << TimNum) ;				// mark as stopped
 
-	// Since adjustments are made to the CCOUNT causing discrepancies between readings
-	// from different core, we have to filter out wild card values
-	if (SYSTIMER_TYPE(TimNum) && (myCLOCKS_TO_US(tElap,uint32_t) > MILLION)) {
+	#if	(ESP32_PLATFORM == 1) && !defined(CONFIG_FREERTOS_UNICORE)
+	/* Adjustments made to CCOUNT cause discrepancies between readings from different cores.
+	 * In order to filter out invalid/OOR values we verify whether the timer is being stopped
+	 * on the same MCU as it was started. If not, we ignore the timing values
+	 */
+	uint8_t	xCoreID		= (STcore & (1UL << TimNum)) ? 1 : 0 ;
+	if (SYSTIMER_TYPE(TimNum) && xCoreID != xPortGetCoreID()) {
+		++STskip ;
 		return 0 ;
 	}
-
+	#endif
+	systimer_t *pST	= &STdata[TimNum] ;
+	uint32_t tElap	= tNow - pST->Last ;
 	pST->Last		= tElap ;
 	pST->Sum		+= tElap ;
 	pST->Count++ ;
@@ -323,7 +342,7 @@ void	vSysTimerShow(uint32_t TimerMask) {
 		if ((TimerMask & Mask) && pST->Count) {
 			if (!SYSTIMER_TYPE(TimNum)) {
 				if (HdrDone == 0) {
-					xprintf("%C%s%C\n", xpfSGR(colourFG_CYAN, 0, 0, 0), systimerHDR_TICKS, attrRESET) ;
+					xprintf("%C%s%C\n", xpfSGR(attrRESET, colourFG_CYAN, 0, 0), systimerHDR_TICKS, attrRESET) ;
 					HdrDone = 1 ;
 				}
 				xprintf("|%2d%c|%8s|%'#7u|%'#7u|%'#7u|",
@@ -348,7 +367,7 @@ void	vSysTimerShow(uint32_t TimerMask) {
 		if ((TimerMask & Mask) && pST->Count) {
 			if (SYSTIMER_TYPE(TimNum)) {
 				if (HdrDone == 0) {
-					xprintf("%C%s%C\n", xpfSGR(colourFG_CYAN, 0, 0, 0), systimerHDR_CLOCKS, attrRESET) ;
+					xprintf("%C%s%C\n", xpfSGR(attrRESET, colourFG_CYAN, 0, 0), systimerHDR_CLOCKS, attrRESET) ;
 					HdrDone = 1 ;
 				}
 				xprintf("|%2d%c|%8s|%'#7u|%'#7u|%'#7u|",
@@ -374,7 +393,11 @@ void	vSysTimerShow(uint32_t TimerMask) {
 		}
 		Mask <<= 1 ;
 	}
+#if		(ESP32_PLATFORM == 1) && !defined(CONFIG_FREERTOS_UNICORE)
+	xprintf("Count Skipped=%u\n", STskip) ;
+#else
 	xprintf("\n") ;
+#endif
 }
 #endif
 
