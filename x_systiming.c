@@ -178,7 +178,7 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 	} else {
 		Idx = 1 + ((pST->Last - pST->SGmin) * (systimerSCATTER_GROUPS-2) ) / (pST->SGmax - pST->SGmin) ;
 	}
-	IF_CPRINT(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER_GROUPS-1, int32_t), "l=%u h=%u n=%u i=%d\n", pST->SGmin, pST->SGmax, pST->Last, Idx) ;
+	IF_PRINT(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER_GROUPS-1, int32_t), "l=%u h=%u n=%u i=%d\n", pST->SGmin, pST->SGmax, pST->Last, Idx) ;
 	IF_myASSERT(debugRESULT, INRANGE(0, Idx, systimerSCATTER_GROUPS-1, int32_t)) ;
 	++pST->Group[Idx] ;
 #endif
@@ -245,19 +245,19 @@ uint64_t xSysTimerGetElapsedSecs(uint8_t TimNum) {
 													" Last Clocks  | Min Clocks   | Max Clocks   | Avg Clocks   | Total Clocks   |"
 
 void	vSysTimerShowHeading(const char * Header, systimer_t * pST) {
-	xprintf(Header) ;
+	printfx(Header) ;
 	#if		(systimerSCATTER == 1)
 	for (int32_t Idx = 0; Idx < systimerSCATTER_GROUPS; ++Idx) {
-		xprintf("%-6u+|", Idx == 0 ? 0 :
+		printfx("%-6u+|", Idx == 0 ? 0 :
 									Idx == 1 ? pST->SGmin + 1 :
 									Idx == systimerSCATTER_GROUPS-1 ? pST->SGmax :
 									pST->SGmin + (pST->SGfact * (Idx-1)) + 1) ;
 	}
 	#endif
-	xprintf("\n") ;
+	printfx("\n") ;
 }
 
-void	vSysTimerShowScatter(systimer_t * pST) { for (int32_t Idx = 0; Idx < systimerSCATTER_GROUPS; xprintf("%7u|", pST->Group[Idx++])) ; }
+void	vSysTimerShowScatter(systimer_t * pST) { for (int32_t Idx = 0; Idx < systimerSCATTER_GROUPS; printfx("%7u|", pST->Group[Idx++])) ; }
 
 /**
  * vSysTimerShow(tMask) - display the current value(s) of the specified timer(s)
@@ -272,21 +272,21 @@ void	vSysTimerShow(uint32_t TimerMask) {
 		if ((TimerMask & Mask) && pST->Count) {
 			vSysTimerShowHeading(Handle, SYSTIMER_TYPE(TimNum) ? systimerHDR_CLOCKS : systimerHDR_TICKS, pST) ;
 			if (SYSTIMER_TYPE(TimNum)) {
-				xprintf("|%2d |%8s|%'9u|%'12llu|%'14llu|",
+				printfx("|%2d |%8s|%'9u|%'12llu|%'14llu|",
 					TimNum,
 					pST->Tag,
 					pST->Count,
 					myCLOCKS_TO_US(pST->Sum, uint64_t) / (uint64_t) pST->Count,
 					myCLOCKS_TO_US(pST->Sum, uint64_t)) ;
-				xprintf("%'12u|%'12u|%'12u|%'14u|",
+				printfx("%'12u|%'12u|%'12u|%'14u|",
 					myCLOCKS_TO_US(pST->Last, uint32_t),
 					myCLOCKS_TO_US(pST->Min, uint32_t),
 					myCLOCKS_TO_US(pST->Max, uint32_t),
 					pST->Sum / (uint64_t) pST->Count) ;
-				xprintf("%'16u|%'14u|%'14u|%'14u|",
+				printfx("%'16u|%'14u|%'14u|%'14u|",
 					pST->Sum, pST->Last, pST->Min, pST->Max) ;
 			} else {
-				xprintf("|%2d |%8s|%'9u|%'10llu|%'12llu|",
+				printfx("|%2d |%8s|%'9u|%'10llu|%'12llu|",
 					TimNum,
 					pST->Tag,
 					pST->Count,
@@ -322,7 +322,7 @@ void	vSysTimerShowScatter(systimer_t * pST) {
 				Rlo	= (Idx - 1) * (pST->SGmax - pST->SGmin) / (systimerSCATTER_GROUPS-2) + pST->SGmin ;
 				Rhi = Rlo + (pST->SGmax - pST->SGmin) / (systimerSCATTER_GROUPS-2) ;
 			}
-			xprintf("  #%d:%'#u->%'#u=%'#u", Idx, Rlo, Rhi, pST->Group[Idx]) ;
+			printfx("  #%d:%'#u->%'#u=%'#u", Idx, Rlo, Rhi, pST->Group[Idx]) ;
 		}
 	}
 }
@@ -342,22 +342,22 @@ void	vSysTimerShow(uint32_t TimerMask) {
 		if ((TimerMask & Mask) && pST->Count) {
 			if (!SYSTIMER_TYPE(TimNum)) {
 				if (HdrDone == 0) {
-					xprintf("%C%s%C\n", xpfSGR(attrRESET, colourFG_CYAN, 0, 0), systimerHDR_TICKS, attrRESET) ;
+					printfx("%C%s%C\n", xpfSGR(attrRESET, colourFG_CYAN, 0, 0), systimerHDR_TICKS, attrRESET) ;
 					HdrDone = 1 ;
 				}
-				xprintf("|%2d%c|%8s|%'#7u|%'#7u|%'#7u|",
+				printfx("|%2d%c|%8s|%'#7u|%'#7u|%'#7u|",
 					TimNum,
 					STstat & (1UL << TimNum) ? 'R' : ' ',
 					pST->Tag,
 					pST->Count,
 					myTICKS_TO_MS(pST->Last, uint32_t),
 					myTICKS_TO_MS(pST->Min, uint32_t)) ;
-				xprintf("%'#7u|%'#7llu|%'#7llu|",
+				printfx("%'#7u|%'#7llu|%'#7llu|",
 					myTICKS_TO_MS(pST->Max, uint32_t),
 					myTICKS_TO_MS(pST->Sum, uint64_t) / (uint64_t) pST->Count,
 					myTICKS_TO_MS(pST->Sum, uint64_t)) ;
 				IF_EXEC_1(systimerSCATTER == 1, vSysTimerShowScatter, pST) ;
-				xprintf("\n") ;
+				printfx("\n") ;
 			}
 		}
 		Mask <<= 1 ;
@@ -367,36 +367,36 @@ void	vSysTimerShow(uint32_t TimerMask) {
 		if ((TimerMask & Mask) && pST->Count) {
 			if (SYSTIMER_TYPE(TimNum)) {
 				if (HdrDone == 0) {
-					xprintf("%C%s%C\n", xpfSGR(attrRESET, colourFG_CYAN, 0, 0), systimerHDR_CLOCKS, attrRESET) ;
+					printfx("%C%s%C\n", xpfSGR(attrRESET, colourFG_CYAN, 0, 0), systimerHDR_CLOCKS, attrRESET) ;
 					HdrDone = 1 ;
 				}
-				xprintf("|%2d%c|%8s|%'#7u|%'#7u|%'#7u|",
+				printfx("|%2d%c|%8s|%'#7u|%'#7u|%'#7u|",
 					TimNum,
 					STstat & (1UL << TimNum) ? 'R' : ' ',
 					pST->Tag,
 					pST->Count,
 					myCLOCKS_TO_US(pST->Last, uint32_t),
 					myCLOCKS_TO_US(pST->Min, uint32_t)) ;
-				xprintf("%'#7u|%'#7llu|%'#7llu|%'#7u|",
+				printfx("%'#7u|%'#7llu|%'#7llu|%'#7u|",
 					myCLOCKS_TO_US(pST->Max, uint32_t),
 					myCLOCKS_TO_US(pST->Sum, uint64_t) / (uint64_t) pST->Count,
 					myCLOCKS_TO_US(pST->Sum, uint64_t),
 					pST->Last) ;
-				xprintf("%'#7u|%'#7u|%'#7llu|%'#7llu|",
+				printfx("%'#7u|%'#7u|%'#7llu|%'#7llu|",
 					pST->Min,
 					pST->Max,
 					pST->Sum / (uint64_t) pST->Count,
 					pST->Sum) ;
 				IF_EXEC_1(systimerSCATTER == 1, vSysTimerShowScatter, pST) ;
-				xprintf("\n") ;
+				printfx("\n") ;
 			}
 		}
 		Mask <<= 1 ;
 	}
 #if		(ESP32_PLATFORM == 1) && !defined(CONFIG_FREERTOS_UNICORE)
-	xprintf("Count Skipped=%u\n", STskip) ;
+	printfx("Count Skipped=%u\n", STskip) ;
 #else
-	xprintf("\n") ;
+	printfx("\n") ;
 #endif
 }
 #endif
