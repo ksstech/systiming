@@ -22,7 +22,7 @@
  * x_systiming.h
  */
 
-#include	"freertos/FreeRTOSConfig.h"
+#include	"FreeRTOS_Support.h"
 
 #include	<stdint.h>
 
