@@ -366,7 +366,11 @@ void	vSysTimerShow(uint32_t TimerMask) {
 		if ((TimerMask & Mask) && pST->Count) {
 			if (SYSTIMER_TYPE(TimNum)) {
 				if (HdrDone == 0) {
+#if		(ESP32_PLATFORM == 1) && !defined(CONFIG_FREERTOS_UNICORE)
+					printfx("%C%s%C OOR Skipped %u\n", xpfSGR(attrRESET, colourFG_CYAN, 0, 0), systimerHDR_CLOCKS, attrRESET, STskip) ;
+#else
 					printfx("%C%s%C\n", xpfSGR(attrRESET, colourFG_CYAN, 0, 0), systimerHDR_CLOCKS, attrRESET) ;
+#endif
 					HdrDone = 1 ;
 				}
 				printfx("|%2d%c|%8s|%'#7u|%'#7u|%'#7u|",
@@ -392,11 +396,7 @@ void	vSysTimerShow(uint32_t TimerMask) {
 		}
 		Mask <<= 1 ;
 	}
-#if		(ESP32_PLATFORM == 1) && !defined(CONFIG_FREERTOS_UNICORE)
-	printfx("Count Skipped=%u\n", STskip) ;
-#else
 	printfx("\n") ;
-#endif
 }
 #endif
 
