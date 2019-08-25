@@ -32,8 +32,9 @@
 
 #include	<string.h>
 
-#define	debugFLAG					0x0000
+#define	debugFLAG					0xC000
 
+#define	debugTRACK					(debugFLAG & 0x2000)
 #define	debugPARAM					(debugFLAG & 0x4000)
 #define	debugRESULT					(debugFLAG & 0x8000)
 
@@ -70,6 +71,7 @@ static uint32_t		STstat = 0, STtype = 0 ;
  */
 void	vSysTimerResetCounters(uint8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM) ;
+	IF_TRACK(debugTRACK, "#=%d", TimNum) ;
 	systimer_t *pST	= &STdata[TimNum] ;
 	STstat			&= ~(1UL << TimNum) ;					// clear active status ie STOP
 	pST->Sum		= 0ULL ;
@@ -99,6 +101,7 @@ void	vSysTimerResetCountersMask(uint32_t TimerMask) {
 
 void	vSysTimerInit(uint8_t TimNum, bool Type, const char * Tag, ...) {
 	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM) ;
+	IF_TRACK(debugTRACK, "#=%d  T=%d '%s'", TimNum, Type, Tag) ;
 	systimer_t *pST	= &STdata[TimNum] ;
 	pST->Tag	= Tag ;
 	if (Type) {
