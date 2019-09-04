@@ -22,8 +22,9 @@
  * x_systiming.h
  */
 
-#include	"FreeRTOS_Support.h"
+#include	"x_definitions.h"
 
+#include	<stdbool.h>
 #include	<stdint.h>
 
 #pragma once
