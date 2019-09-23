@@ -135,6 +135,7 @@ uint32_t xSysTimerStart(uint8_t TimNum) {
 	}
 #endif
 	STstat	|= (1UL << TimNum) ;						// Mark as started & running
+	STdata[TimNum].Count++ ;
 	return (STdata[TimNum].Last = SYSTIMER_TYPE(TimNum) ? GET_CLOCK_COUNTER() : xTaskGetTickCount()) ;
 }
 
@@ -163,7 +164,6 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 	uint32_t tElap	= tNow - pST->Last ;
 	pST->Last		= tElap ;
 	pST->Sum		+= tElap ;
-	pST->Count++ ;
 	// update Min & Max if required
 	if (pST->Min > pST->Last) {
 		pST->Min	=  pST->Last ;
