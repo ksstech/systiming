@@ -195,16 +195,19 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
  */
 uint32_t xSysTimerIsRunning(uint8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM) ;
-	uint32_t	tNow = SYSTIMER_TYPE(TimNum) ? GET_CLOCK_COUNTER() : xTaskGetTickCount() ;
-	if (SYSTIMER_TYPE(TimNum)) {
+	uint32_t	tNow = 0 ;
+	if (STstat & (1 << TimNum)) {
+		tNow = SYSTIMER_TYPE(TimNum) ? GET_CLOCK_COUNTER() : xTaskGetTickCount() ;
 		systimer_t * pST = &STdata[TimNum] ;
-		if (tNow > pST->Last) {							// from here outside of running timer context
-			tNow -= pST->Last ;							// most likely NO wrap
+		if (SYSTIMER_TYPE(TimNum)) {
+			if (tNow > pST->Last) {							// from here outside of running timer context
+				tNow -= pST->Last ;							// most likely NO wrap
+			} else {
+				tNow += (0xFFFFFFFF - pST->Last) ;			// definitely wrapped
+			}
 		} else {
-			tNow += (0xFFFFFFFF - pST->Last) ;			// definitely wrapped
+			tNow -= pST->Last ;
 		}
-	} else {
-		tNow = 0 ;
 	}
 	return tNow ;
 }
