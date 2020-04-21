@@ -313,6 +313,7 @@ void	vSysTimerShow(uint32_t TimerMask) {
 #define	systimerHDR_TICKS	"| # |TickTMR | Count |Last mS|Min mS |Max mS |Avg mS |Sum mS |"
 #define	systimerHDR_CLOCKS	"| # |ClockTMR| Count |Last uS|Min uS |Max uS |Avg uS |Sum uS |LastClk|Min Clk|Max Clk|Avg Clk|Sum Clk|"
 
+#if		(systimerSCATTER == 1)
 void	vSysTimerShowScatter(systimer_t * pST) {
 	uint32_t Rlo, Rhi ;
 	for (int32_t Idx = 0; Idx < systimerSCATTER_GROUPS; ++Idx) {
@@ -331,6 +332,7 @@ void	vSysTimerShowScatter(systimer_t * pST) {
 		}
 	}
 }
+#endif
 
 /**
  * vSysTimerShow(tMask) - display the current value(s) of the specified timer(s)
@@ -361,7 +363,9 @@ void	vSysTimerShow(uint32_t TimerMask) {
 					myTICKS_TO_MS(pST->Max, uint32_t),
 					myTICKS_TO_MS(pST->Sum, uint64_t) / (uint64_t) pST->Count,
 					myTICKS_TO_MS(pST->Sum, uint64_t)) ;
-				IF_EXEC_1(systimerSCATTER == 1, vSysTimerShowScatter, pST) ;
+#if		(systimerSCATTER == 1)
+				vSysTimerShowScatter(pST) ;
+#endif
 				PRINT("\n") ;
 			}
 		}
@@ -396,7 +400,9 @@ void	vSysTimerShow(uint32_t TimerMask) {
 					pST->Max,
 					pST->Sum / (uint64_t) pST->Count,
 					pST->Sum) ;
-				IF_EXEC_1(systimerSCATTER == 1, vSysTimerShowScatter, pST) ;
+#if		(systimerSCATTER == 1)
+				vSysTimerShowScatter(pST) ;
+#endif
 				PRINT("\n") ;
 			}
 		}

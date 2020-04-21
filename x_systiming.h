@@ -39,7 +39,13 @@ extern "C" {
 #define	systimerSCATTER_GROUPS					10			// number of scatter graph groupings
 #define	systimerSCATTER_HDR_SHOW				0			// 0=no scatter heading ie intelligent display
 
-#define	IF_SYSTIMER_INIT(T,n,t,tag, ...)		if (T) vSysTimerInit(n,t,tag, ##__VA_ARGS__)
+#if		(systimerSCATTER == 1)
+	#define	IF_SYSTIMER_INIT(T, n, t, tag, ...)		if (T) vSysTimerInit(n, t, tag, ##__VA_ARGS__)
+#else
+	// Allows macro to take scatter parameters (hence avoid errors if used in macro definition)
+	// but discard values passed
+	#define	IF_SYSTIMER_INIT(T, n, t, tag, ...)		if (T) vSysTimerInit(n, t, tag)
+#endif
 #define	IF_SYSTIMER_START(T,y)					if (T) xSysTimerStart(y)
 #define	IF_SYSTIMER_STOP(T,y)					if (T) xSysTimerStop(y)
 #define	IF_SYSTIMER_RESET(T,y)					if (T) xSysTimerReset(y)
@@ -63,6 +69,7 @@ enum {
 //	systimerM90EX6,
 	systimerACT_S0, systimerACT_S1, systimerACT_S2, systimerACT_S3, systimerACT_SX,
 //	systimerSSD1306, systimerSSD1306_2,
+	systimerILI9341_1, systimerILI9341_2,
 //	systimerTFTP,										// TFTP task execution timing...
 	systimerMAX_NUM,									// last in list, define all required above here
 
@@ -77,6 +84,7 @@ enum {
 	systimerM90EX6 = 31,
 //	systimerACT_S0 = 31, systimerACT_S1 = 31, systimerACT_S2 = 31, systimerACT_S3 = 31, systimerACT_SX = 31,
 	systimerSSD1306 = 31, systimerSSD1306_2 = 31,
+//	systimerILI9341_1 = 31, systimerili9341_2 = 31,
 	systimerTFTP = 31,
 } ;
 
@@ -92,11 +100,14 @@ typedef struct __attribute__((packed)) systimer_s {
 #endif
 } systimer_t ;
 
-DUMB_STATIC_ASSERT(sizeof(systimer_t) == (9 + systimerSCATTER_GROUPS) * sizeof(uint32_t)) ;
+#if		(systimerSCATTER == 1)
+	DUMB_STATIC_ASSERT(sizeof(systimer_t) == sizeof(char*) + sizeof(uint64_t) + (sizeof(uint32_t) * (6 + systimerSCATTER_GROUPS))) ;
+#else
+	DUMB_STATIC_ASSERT(sizeof(systimer_t) == sizeof(char*) + sizeof(uint64_t) + (sizeof(uint32_t) * 4)) ;
+#endif
 
 // ######################################### Public variables ######################################
 
-extern	uint32_t		ST0to1, ST1to0 ;
 
 // ######################################### Public functions ######################################
 
