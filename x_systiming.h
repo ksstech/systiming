@@ -59,7 +59,7 @@ enum { systimerTICKS, systimerCLOCKS } ;
 
 enum {
 	systimerL2, 		systimerL3,						// track Lx disconnected time & occurrences
-//	systimerMQTT_RX,	systimerMQTT_TX,
+	systimerMQTT_RX,	systimerMQTT_TX,
 //	systimerHTTP,
 //	systimerFOTA,
 //	systimerSLOG,
@@ -74,7 +74,7 @@ enum {
 	systimerMAX_NUM,									// last in list, define all required above here
 
 // From here we list disabled timers to avoid compile errors
-	systimerMQTT_RX = 31,	systimerMQTT_TX = 31,
+//	systimerMQTT_RX = 31,	systimerMQTT_TX = 31,
 	systimerHTTP = 31,
 	systimerFOTA = 31,
 	systimerSLOG = 31,
