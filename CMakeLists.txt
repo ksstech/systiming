@@ -1,5 +1,5 @@
-set(COMPONENT_SRCS "x_systiming.c")
-set(COMPONENT_ADD_INCLUDEDIRS)
-set(COMPONENT_REQUIRES)
-set(COMPONENT_PRIV_REQUIRES)
-register_component()
+idf_component_register( SRCS x_systiming.c
+						INCLUDE_DIRS . 
+						REQUIRES common
+						PRIV_REQUIRES rtos-support syslog printf hal_esp32
+						)

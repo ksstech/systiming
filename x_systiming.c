@@ -24,6 +24,7 @@
 #include	"FreeRTOS_Support.h"
 
 #include	"x_syslog.h"
+#include	"x_printf.h"
 #include	"x_systiming.h"
 
 #include	"hal_config.h"
