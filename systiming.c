@@ -18,15 +18,15 @@
  */
 
 /*
- * 	x_systiming.c
+ * 	systiming.c
  */
+
+#include "systiming.h"
 
 #include	"FreeRTOS_Support.h"
 
-#include	"x_syslog.h"
-#include	"x_printf.h"
-#include	"x_systiming.h"
-
+#include	"syslog.h"
+#include	"printfx.h"
 #include	"hal_config.h"
 #include	"hal_debug.h"
 #include	"hal_timer.h"

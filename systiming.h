@@ -19,7 +19,7 @@
  */
 
 /*
- * x_systiming.h
+ * systiming.h
  */
 
 #include	"x_definitions.h"
