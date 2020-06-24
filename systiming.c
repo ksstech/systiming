@@ -34,10 +34,16 @@
 #include	<string.h>
 
 #define	debugFLAG					0xC000
+#define	debugTASK_DELAY				(debugFLAG & 0x0001)
 
 #define	debugTRACK					(debugFLAG & 0x2000)
 #define	debugPARAM					(debugFLAG & 0x4000)
 #define	debugRESULT					(debugFLAG & 0x8000)
+
+// ##################################### Developer notes ###########################################
+/*
+	Implement long command to change timer LO & HI values
+ */
 
 // ################################# Code execution timer support ##################################
 
@@ -411,6 +417,18 @@ void	vSysTimerShow(uint32_t TimerMask) {
 	}
 }
 #endif
+
+int64_t	i64TaskDelayUsec(uint32_t u32Period) {
+	int64_t	i64Start = esp_timer_get_time() ;
+	int64_t	i64Period = u32Period ;
+	int64_t i64Now ;
+	UBaseType_t CurPri = uxTaskPriorityGet(NULL) ;
+	vTaskPrioritySet(NULL, 0) ;
+	while ((i64Now = esp_timer_get_time() - i64Start) < i64Period)	taskYIELD() ;
+	vTaskPrioritySet(NULL, CurPri) ;
+	IF_PRINT(debugTASK_DELAY, "D=%lli   ", i64Now - i64Period) ;
+	return i64Now ;
+}
 
 // ################################## MCU Clock cycle delay support ################################
 

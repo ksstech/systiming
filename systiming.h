@@ -30,7 +30,7 @@
 #pragma once
 
 #ifdef __cplusplus
-extern "C" {
+	extern "C" {
 #endif
 
 // #################################################################################################
@@ -40,11 +40,11 @@ extern "C" {
 #define	systimerSCATTER_HDR_SHOW				0			// 0=no scatter heading ie intelligent display
 
 #if		(systimerSCATTER == 1)
-	#define	IF_SYSTIMER_INIT(T, n, t, tag, ...)		if (T) vSysTimerInit(n, t, tag, ##__VA_ARGS__)
+	#define	IF_SYSTIMER_INIT(T,n,t,tag, ...)	if (T) vSysTimerInit(n, t, tag, ##__VA_ARGS__)
 #else
 	// Allows macro to take scatter parameters (hence avoid errors if used in macro definition)
 	// but discard values passed
-	#define	IF_SYSTIMER_INIT(T, n, t, tag, ...)		if (T) vSysTimerInit(n, t, tag)
+	#define	IF_SYSTIMER_INIT(T,n,t,tag, ...)	if (T) vSysTimerInit(n,t,tag)
 #endif
 #define	IF_SYSTIMER_START(T,y)					if (T) xSysTimerStart(y)
 #define	IF_SYSTIMER_STOP(T,y)					if (T) xSysTimerStop(y)
@@ -64,8 +64,10 @@ enum {
 //	systimerFOTA,
 //	systimerSLOG,
 	systimerPCA9555,
-	systimerDS248x1, systimerDS248x2, systimerDS248x3,
-//	systimerDS18X20,
+	systimerOW1, systimerOW2,
+	systimerDS248xA, systimerDS248xB, systimerDS248xC, systimerDS248xD,  systimerDS248xE,  systimerDS248xF,
+	systimerDS1820A,systimerDS1820B,
+	systimerDS1990,
 //	systimerM90EX6,
 	systimerACT_S0, systimerACT_S1, systimerACT_S2, systimerACT_S3, systimerACT_SX,
 //	systimerSSD1306, systimerSSD1306_2,
@@ -79,8 +81,10 @@ enum {
 	systimerFOTA = 31,
 	systimerSLOG = 31,
 //	systimerPCA9555 = 31,
-//	systimerDS248x1 = 31, systimerDS248x2 = 31, systimerDS248x3 = 31,
-	systimerDS18X20,
+//	systimerOW1 = 31, systimerOW2 = 31,
+//	systimerDS248xA = 31, systimerDS248xB = 31, systimerDS248xC = 31, systimerDS248xD = 31, systimerDS248xE = 31, systimerDS248xF = 31,
+//	systimerDS1820A = 31, systimerDS1820B = 31,
+//	systimerDS1990 = 31,
 	systimerM90EX6 = 31,
 //	systimerACT_S0 = 31, systimerACT_S1 = 31, systimerACT_S2 = 31, systimerACT_S3 = 31, systimerACT_SX = 31,
 	systimerSSD1306 = 31, systimerSSD1306_2 = 31,
@@ -126,6 +130,8 @@ uint64_t xSysTimerGetElapsedMillis(uint8_t TimNum) ;
 uint64_t xSysTimerGetElapsedSecs(uint8_t TimNum) ;
 
 void	vSysTimerShow(uint32_t TimerMask) ;
+
+int64_t i64TaskDelayUsec(uint32_t u32Period) ;
 
 uint32_t xClockDelayUsec(uint32_t uSec) ;
 uint32_t xClockDelayMsec(uint32_t mSec) ;
