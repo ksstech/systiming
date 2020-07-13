@@ -172,11 +172,11 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 	pST->Last		= tElap ;
 	pST->Sum		+= tElap ;
 	// update Min & Max if required
-	if (pST->Min > pST->Last) {
-		pST->Min	=  pST->Last ;
+	if (tElap < pST->Min) {
+		pST->Min	=  tElap ;
 	}
-	if (pST->Max < pST->Last) {
-		pST->Max	=  pST->Last ;
+	if (tElap > pST->Max) {
+		pST->Max	=  tElap ;
 	}
 #if		(systimerSCATTER == 1)
 	int32_t Idx ;

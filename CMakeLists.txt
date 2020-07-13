@@ -1,5 +1,11 @@
-idf_component_register( SRCS systiming.c
-						INCLUDE_DIRS . 
-						REQUIRES common
-						PRIV_REQUIRES rtos-support syslog printf hal_esp32
+set(srcs "systiming.c" )
+set(include_dirs "." )
+#set(priv_include_dirs "." )
+set(requires common )
+set(priv_requires rtos-support syslog printf hal_esp32 )
+idf_component_register( SRCS ${srcs}
+						INCLUDE_DIRS ${include_dirs} 
+#						PRIV_INCLUDE_DIRS ${priv_include_dirs} 
+						REQUIRES ${requires} 
+						PRIV_REQUIRES ${priv_requires}
 						)

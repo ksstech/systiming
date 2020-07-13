@@ -30,7 +30,7 @@
 #pragma once
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
 // #################################################################################################
@@ -70,9 +70,10 @@ enum {
 	systimerDS1990,
 //	systimerM90EX6,
 	systimerACT_S0, systimerACT_S1, systimerACT_S2, systimerACT_S3, systimerACT_SX,
-//	systimerSSD1306, systimerSSD1306_2,
+	systimerSSD1306A, systimerSSD1306B,
 	systimerILI9341_1, systimerILI9341_2,
 //	systimerTFTP,										// TFTP task execution timing...
+	systimerGUI0, systimerGUI1,
 	systimerMAX_NUM,									// last in list, define all required above here
 
 // From here we list disabled timers to avoid compile errors
@@ -87,9 +88,10 @@ enum {
 //	systimerDS1990 = 31,
 	systimerM90EX6 = 31,
 //	systimerACT_S0 = 31, systimerACT_S1 = 31, systimerACT_S2 = 31, systimerACT_S3 = 31, systimerACT_SX = 31,
-	systimerSSD1306 = 31, systimerSSD1306_2 = 31,
+//	systimerSSD1306A = 31, systimerSSD1306B = 31,
 //	systimerILI9341_1 = 31, systimerili9341_2 = 31,
 	systimerTFTP = 31,
+//	systimerGUI0 = 31, systimerGUI1 = 31,
 } ;
 
 // ######################################### Data structures #######################################
