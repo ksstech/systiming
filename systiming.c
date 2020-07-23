@@ -21,12 +21,12 @@
  * 	systiming.c
  */
 
-#include "systiming.h"
-
+#include	"systiming.h"
 #include	"FreeRTOS_Support.h"
-
 #include	"syslog.h"
 #include	"printfx.h"
+#include	"x_time.h"
+
 #include	"hal_config.h"
 #include	"hal_debug.h"
 #include	"hal_timer.h"

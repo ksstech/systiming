@@ -22,7 +22,7 @@
  * systiming.h
  */
 
-#include	"x_definitions.h"
+#include	"x_definitions.h"							// brings DUMB_STATIC_ASSERT
 
 #include	<stdbool.h>
 #include	<stdint.h>
