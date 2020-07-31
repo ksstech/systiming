@@ -352,6 +352,7 @@ void	vSysTimerShow(uint32_t TimerMask) {
 	systimer_t * pST ;
 	bool	HdrDone ;
 	// first handle the simpler tick timers
+	printfx_lock() ;
 	for (TimNum = 0, pST = STdata, Mask = 0x00000001, HdrDone = 0; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
 		if ((TimerMask & Mask) && pST->Count) {
 			if (!SYSTIMER_TYPE(TimNum)) {
@@ -415,6 +416,7 @@ void	vSysTimerShow(uint32_t TimerMask) {
 		}
 		Mask <<= 1 ;
 	}
+	printfx_unlock() ;
 }
 #endif
 
