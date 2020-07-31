@@ -34,11 +34,11 @@
 #include	<string.h>
 
 #define	debugFLAG					0xC000
-#define	debugTASK_DELAY				(debugFLAG & 0x0001)
 
-#define	debugTRACK					(debugFLAG & 0x2000)
-#define	debugPARAM					(debugFLAG & 0x4000)
-#define	debugRESULT					(debugFLAG & 0x8000)
+#define	debugTIMING					(debugFLAG_GLOBAL & debugFLAG & 0x1000)
+#define	debugTRACK					(debugFLAG_GLOBAL & debugFLAG & 0x2000)
+#define	debugPARAM					(debugFLAG_GLOBAL & debugFLAG & 0x4000)
+#define	debugRESULT					(debugFLAG_GLOBAL & debugFLAG & 0x8000)
 
 // ##################################### Developer notes ###########################################
 /*
@@ -426,7 +426,7 @@ int64_t	i64TaskDelayUsec(uint32_t u32Period) {
 	vTaskPrioritySet(NULL, 0) ;
 	while ((i64Now = esp_timer_get_time() - i64Start) < i64Period)	taskYIELD() ;
 	vTaskPrioritySet(NULL, CurPri) ;
-	IF_PRINT(debugTASK_DELAY, "D=%lli   ", i64Now - i64Period) ;
+	IF_PRINT(debugTIMING, "D=%lli   ", i64Now - i64Period) ;
 	return i64Now ;
 }
 
