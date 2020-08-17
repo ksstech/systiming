@@ -73,7 +73,7 @@ enum {
 	systimerSSD1306A, systimerSSD1306B,
 	systimerILI9341_1, systimerILI9341_2,
 //	systimerTFTP,										// TFTP task execution timing...
-	systimerGUI0, systimerGUI1,
+	systimerGUI0, systimerGUI1, systimerGUI2,
 	systimerMAX_NUM,									// last in list, define all required above here
 
 // From here we list disabled timers to avoid compile errors
@@ -91,7 +91,7 @@ enum {
 //	systimerSSD1306A = 31, systimerSSD1306B = 31,
 //	systimerILI9341_1 = 31, systimerili9341_2 = 31,
 	systimerTFTP = 31,
-//	systimerGUI0 = 31, systimerGUI1 = 31,
+//	systimerGUI0 = 31, systimerGUI1 = 31, systimerGUI2 = 31,
 } ;
 
 // ######################################### Data structures #######################################
