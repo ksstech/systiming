@@ -480,18 +480,18 @@ void	vSysTimingTestSet(uint32_t Type, const char * Tag, uint32_t Delay) {
 
 void	vSysTimingTest(void) {
 #if		(systimerTEST_DELAY == 1)						// Test the uSec delays
-	uint32_t	uCount, uSecs ;
-	uCount	= GET_CLOCK_COUNTER() ;
+	uint32_t	uClock, uSecs ;
+	uClock	= GET_CLOCK_COUNTER() ;
 	uSecs	= xClockDelayUsec(100) ;
-	SL_DBG("Delay=%'u uS", (uSecs - uCount) / configCLOCKS_PER_USEC) ;
+	SL_DBG("Delay=%'u uS", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
 
-	uCount	= GET_CLOCK_COUNTER() ;
+	uClock	= GET_CLOCK_COUNTER() ;
 	uSecs	= xClockDelayUsec(1000) ;
-	SL_DBG("Delay=%'u uS", (uSecs - uCount) / configCLOCKS_PER_USEC) ;
+	SL_DBG("Delay=%'u uS", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
 
-	uCount	= GET_CLOCK_COUNTER() ;
+	uClock	= GET_CLOCK_COUNTER() ;
 	uSecs	= xClockDelayUsec(10000) ;
-	SL_DBG("Delay=%'u uS", (uSecs - uCount) / configCLOCKS_PER_USEC) ;
+	SL_DBG("Delay=%'u uS", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
 #endif
 #if 	(systimerTEST_TICKS == 1)						// Test TICK timers & Scatter groups
 	vSysTimingTestSet(systimerTICKS, "TICKS", 1) ;
