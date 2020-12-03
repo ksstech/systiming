@@ -467,15 +467,15 @@ void	vSysTimingTest(void) {
 	uint32_t	uClock, uSecs ;
 	uClock	= GET_CLOCK_COUNTER() ;
 	uSecs	= xClockDelayUsec(100) ;
-	SL_DBG("Delay=%'u uS", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
+	PRINT("Delay=%'u uS\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
 
 	uClock	= GET_CLOCK_COUNTER() ;
 	uSecs	= xClockDelayUsec(1000) ;
-	SL_DBG("Delay=%'u uS", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
+	PRINT("Delay=%'u uS\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
 
 	uClock	= GET_CLOCK_COUNTER() ;
 	uSecs	= xClockDelayUsec(10000) ;
-	SL_DBG("Delay=%'u uS", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
+	PRINT("Delay=%'u uS\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
 #endif
 #if 	(systimerTEST_TICKS == 1)						// Test TICK timers & Scatter groups
 	vSysTimingTestSet(systimerTICKS, "TICKS", 1) ;
