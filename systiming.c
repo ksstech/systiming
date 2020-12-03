@@ -23,17 +23,6 @@
 #define	debugPARAM					(debugFLAG_GLOBAL & debugFLAG & 0x4000)
 #define	debugRESULT					(debugFLAG_GLOBAL & debugFLAG & 0x8000)
 
-// ################################# Code execution timer support ##################################
-
-#define	SYSTIMER_TYPE(x)	(STtype & (1UL << x))
-
-static systimer_t	STdata[systimerMAX_NUM] = { 0 } ;
-static uint32_t		STstat = 0, STtype = 0 ;
-#if		(ESP32_PLATFORM == 1) && !defined(CONFIG_FREERTOS_UNICORE)
-	static uint32_t	STcore = 0 ;
-	uint32_t		STskip = 0 ;
-#endif
-
 #ifdef	ESP_PLATFORM
 /* Functions rely on the GET_CLOCK_COUNTER definition being present and correct in "hal_timer.h"
  * Maximum period that can be delayed or measured is UINT32_MAX clock cycles.
@@ -52,6 +41,17 @@ static uint32_t		STstat = 0, STtype = 0 ;
 	#define	SET_CLOCK_COUNTER()			xthal_set_ccount()		// XTHAL_SET_CCOUNT
 #else
 
+#endif
+
+// ################################# Code execution timer support ##################################
+
+#define	SYSTIMER_TYPE(x)	(STtype & (1UL << x))
+
+static systimer_t	STdata[systimerMAX_NUM] = { 0 } ;
+static uint32_t		STstat = 0, STtype = 0 ;
+#if		defined(ESP_PLATFORM) && !defined(CONFIG_FREERTOS_UNICORE)
+	static uint32_t	STcore = 0 ;
+	uint32_t		STskip = 0 ;
 #endif
 
 /**
@@ -83,9 +83,7 @@ void	vSysTimerResetCountersMask(uint32_t TimerMask) {
 	uint32_t mask 	= 0x00000001 ;
 	systimer_t *pST	= STdata ;
 	for (uint8_t TimNum = 0; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
-		if (TimerMask & mask) {
-			vSysTimerResetCounters(TimNum) ;
-		}
+		if (TimerMask & mask)	vSysTimerResetCounters(TimNum) ;
 		mask <<= 1 ;
 	}
 }
