@@ -6,9 +6,13 @@
 #include	"systiming.h"
 #include	"printfx.h"									// +x_definitions +stdarg +stdint +stdio
 
-#include	"hal_config.h"
-#include	"hal_debug.h"
-#include	"hal_timer.h"
+#if		defined(ESP_PLATFORM)
+	#include	"FreeRTOS_Support.h"
+	#include	"hal_config.h"
+	#include	"hal_debug.h"
+#else
+
+#endif
 
 #include	<string.h>
 
@@ -18,11 +22,6 @@
 #define	debugTRACK					(debugFLAG_GLOBAL & debugFLAG & 0x2000)
 #define	debugPARAM					(debugFLAG_GLOBAL & debugFLAG & 0x4000)
 #define	debugRESULT					(debugFLAG_GLOBAL & debugFLAG & 0x8000)
-
-// ##################################### Developer notes ###########################################
-/*
-	Implement long command to change timer LO & HI values
- */
 
 // ################################# Code execution timer support ##################################
 
@@ -35,6 +34,7 @@ static uint32_t		STstat = 0, STtype = 0 ;
 	uint32_t		STskip = 0 ;
 #endif
 
+#ifdef	ESP_PLATFORM
 /* Functions rely on the GET_CLOCK_COUNTER definition being present and correct in "hal_timer.h"
  * Maximum period that can be delayed or measured is UINT32_MAX clock cycles.
  * This translates to:
@@ -46,8 +46,13 @@ static uint32_t		STstat = 0, STtype = 0 ;
  *
  * If it is found that values radically jump around it is most likely related to the task
  * where measurements are started, stopped or reported from NOT RUNNING on a SPECIFIC core
- * Pin the task to a specific core and the problem should go away.
- */
+ * Pin the task to a specific core and the problem should go away */
+//										function call 		vs		inline code
+	#define	GET_CLOCK_COUNTER()			xthal_get_ccount()		// XTHAL_GET_CCOUNT
+	#define	SET_CLOCK_COUNTER()			xthal_set_ccount()		// XTHAL_SET_CCOUNT
+#else
+
+#endif
 
 /**
  * vSysTimerResetCounters() -Reset all the timer values for a single timer #
@@ -113,7 +118,7 @@ void	vSysTimerInit(uint8_t TimNum, bool Type, const char * Tag, ...) {
  */
 uint32_t xSysTimerStart(uint8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM) ;
-#if		(ESP32_PLATFORM == 1) && !defined(CONFIG_FREERTOS_UNICORE)
+#if		defined(ESP_PLATFORM) && !defined(CONFIG_FREERTOS_UNICORE)
 	if (xPortGetCoreID()) {
 		STcore |= (1UL << TimNum) ;						// Running on Core 1
 	} else {
@@ -135,7 +140,7 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 	uint32_t tNow		= SYSTIMER_TYPE(TimNum) ? GET_CLOCK_COUNTER() : xTaskGetTickCount() ;
 	STstat				&= ~(1UL << TimNum) ;				// mark as stopped
 
-	#if	(ESP32_PLATFORM == 1) && !defined(CONFIG_FREERTOS_UNICORE)
+	#if	defined(ESP_PLATFORM) && !defined(CONFIG_FREERTOS_UNICORE)
 	/* Adjustments made to CCOUNT cause discrepancies between readings from different cores.
 	 * In order to filter out invalid/OOR values we verify whether the timer is being stopped
 	 * on the same MCU as it was started. If not, we ignore the timing values
@@ -367,10 +372,10 @@ void	vSysTimerShow(uint32_t TimerMask) {
 		if ((TimerMask & Mask) && pST->Count) {
 			if (SYSTIMER_TYPE(TimNum)) {
 				if (HdrDone == 0) {
-#if		(ESP32_PLATFORM == 1) && !defined(CONFIG_FREERTOS_UNICORE)
-					printfx_nolock("\n%C%s%C OOR Skipped %u\n", xpfSGR(attrRESET, colourFG_CYAN, 0, 0), systimerHDR_CLOCKS, attrRESET, STskip) ;
-#else
+#if		defined(ESP_PLATFORM) && defined(CONFIG_FREERTOS_UNICORE)
 					printfx_nolock("\n%C%s%C\n", xpfSGR(attrRESET, colourFG_CYAN, 0, 0), systimerHDR_CLOCKS, attrRESET) ;
+#else
+					printfx_nolock("\n%C%s%C OOR Skipped %u\n", xpfSGR(attrRESET, colourFG_CYAN, 0, 0), systimerHDR_CLOCKS, attrRESET, STskip) ;
 #endif
 					HdrDone = 1 ;
 				}
