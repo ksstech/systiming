@@ -86,12 +86,6 @@ typedef struct __attribute__((packed)) systimer_s {
 #endif
 } systimer_t ;
 
-#if		(systimerSCATTER == 1)
-	DUMB_STATIC_ASSERT(sizeof(systimer_t) == sizeof(char*) + sizeof(uint64_t) + (sizeof(uint32_t) * (6 + systimerSCATTER_GROUPS))) ;
-#else
-	DUMB_STATIC_ASSERT(sizeof(systimer_t) == sizeof(char*) + sizeof(uint64_t) + (sizeof(uint32_t) * 4)) ;
-#endif
-
 // ######################################### Public variables ######################################
 
 
