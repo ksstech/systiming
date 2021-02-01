@@ -208,7 +208,7 @@ uint32_t xSysTimerIsRunning(uint8_t TimNum) {
  * @return	Type being 0=TICK 1=CLOCK
  */
 bool	bSysTimerGetStatus(uint8_t TimNum, systimer_t * pST) {
-	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM && INRANGE_SRAM(pST)) ;
+	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM && halCONFIG_inSRAM(pST)) ;
 	memcpy(pST, &STdata[TimNum], sizeof(systimer_t)) ;
 	return SYSTIMER_TYPE(TimNum) ? 1 : 0 ;				// return the Type (0=TICK 1=CLOCK)
 }
