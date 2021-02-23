@@ -5,13 +5,11 @@
 
 #include	"systiming.h"
 #include	"printfx.h"									// +x_definitions +stdarg +stdint +stdio
+#include	"hal_config.h"
+#include	"hal_timer.h"
 
 #if		defined(ESP_PLATFORM)
 	#include	"FreeRTOS_Support.h"
-	#include	"hal_config.h"
-	#include	"hal_debug.h"
-#else
-
 #endif
 
 #include	<string.h>
