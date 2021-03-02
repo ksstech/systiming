@@ -340,7 +340,7 @@ void	vSysTimerShow(uint32_t TimerMask) {
 		if ((TimerMask & Mask) && pST->Count) {
 			if (!SYSTIMER_TYPE(TimNum)) {
 				if (HdrDone == 0) {
-					printfx("\n%C%s%C\n", xpfSGR(attrRESET, colourFG_CYAN, 0, 0), systimerHDR_TICKS, xpfSGR(attrRESET, 0, 0, 0)) ;
+					printfx("\n%C%s%C\n", xpfSGR(colourFG_CYAN, 0, 0, 0), systimerHDR_TICKS, xpfSGR(attrRESET, 0, 0, 0)) ;
 					HdrDone = 1 ;
 				}
 				printfx("|%2d%c|%8s|%'#7u|%'#7u|%'#7u|",
@@ -368,9 +368,9 @@ void	vSysTimerShow(uint32_t TimerMask) {
 			if (SYSTIMER_TYPE(TimNum)) {
 				if (HdrDone == 0) {
 #if		defined(ESP_PLATFORM) && defined(CONFIG_FREERTOS_UNICORE)
-					printfx("\n%C%s%C\n", xpfSGR(attrRESET, colourFG_CYAN, 0, 0), systimerHDR_CLOCKS, xpfSGR(attrRESET, 0, 0, 0)) ;
+					printfx("\n%C%s%C\n", xpfSGR(colourFG_CYAN, 0, 0, 0), systimerHDR_CLOCKS, xpfSGR(attrRESET, 0, 0, 0)) ;
 #else
-					printfx("\n%C%s%C OOR Skipped %u\n", xpfSGR(attrRESET, colourFG_CYAN, 0, 0), systimerHDR_CLOCKS, xpfSGR(attrRESET, 0, 0, 0), STskip) ;
+					printfx("\n%C%s%C OOR Skipped %u\n", xpfSGR(colourFG_CYAN, 0, 0, 0), systimerHDR_CLOCKS, xpfSGR(attrRESET, 0, 0, 0), STskip) ;
 #endif
 					HdrDone = 1 ;
 				}
