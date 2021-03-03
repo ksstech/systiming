@@ -6,7 +6,6 @@
 #include	"systiming.h"
 #include	"printfx.h"									// +x_definitions +stdarg +stdint +stdio
 #include	"hal_config.h"
-#include	"hal_timer.h"
 
 #if		defined(ESP_PLATFORM)
 	#include	"FreeRTOS_Support.h"
@@ -20,26 +19,6 @@
 #define	debugTRACK					(debugFLAG_GLOBAL & debugFLAG & 0x2000)
 #define	debugPARAM					(debugFLAG_GLOBAL & debugFLAG & 0x4000)
 #define	debugRESULT					(debugFLAG_GLOBAL & debugFLAG & 0x8000)
-
-#ifdef	ESP_PLATFORM
-/* Functions rely on the GET_CLOCK_COUNTER definition being present and correct in "hal_timer.h"
- * Maximum period that can be delayed or measured is UINT32_MAX clock cycles.
- * This translates to:
- * 		80Mhz		53.687,091 Sec
- * 		100Mhz		42.949,672 Sec
- * 		120Mhz		35.791,394 Sec
- * 		160Mhz		26.843,546 Sec
- * 		240Mhz		17.895,697 Sec
- *
- * If it is found that values radically jump around it is most likely related to the task
- * where measurements are started, stopped or reported from NOT RUNNING on a SPECIFIC core
- * Pin the task to a specific core and the problem should go away */
-//										function call 		vs		inline code
-	#define	GET_CLOCK_COUNTER()			xthal_get_ccount()		// XTHAL_GET_CCOUNT
-	#define	SET_CLOCK_COUNTER()			xthal_set_ccount()		// XTHAL_SET_CCOUNT
-#else
-
-#endif
 
 // ################################# Code execution timer support ##################################
 
