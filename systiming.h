@@ -3,10 +3,10 @@
  * Copyright 2014-20 Andre M Maree / KSS Technologies (Pty) Ltd.
  */
 
+#pragma once
+
 #include	<stdbool.h>
 #include	<stdint.h>
-
-#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,7 +76,7 @@ enum {
 
 // ######################################### Data structures #######################################
 
-typedef struct __attribute__((packed)) systimer_s {
+typedef struct __attribute__((packed)) systimer_t {
 	const char * Tag ;
 	uint64_t	Sum ;
 	uint32_t	Last, Count, Min, Max ;
