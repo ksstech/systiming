@@ -241,7 +241,6 @@ void	vSysTimerShowScatter(systimer_t * pST) {
 void	vSysTimerShow(uint32_t TimerMask) {
 	uint32_t	Mask, TimNum ;
 	systimer_t * pST ;
-	printfx_lock() ;
 	for (TimNum = 0, pST = STdata, Mask = 0x00000001; TimNum < systimerMAX_NUM; ++TimNum, ++pST) {
 		if ((TimerMask & Mask) && pST->Count) {
 			vSysTimerShowHeading(SYSTIMER_TYPE(TimNum) ? systimerHDR_CLOCKS : systimerHDR_TICKS, pST) ;
@@ -276,7 +275,6 @@ void	vSysTimerShow(uint32_t TimerMask) {
 		}
 		Mask <<= 1 ;
 	}
-	printfx_unlock() ;
 }
 #else
 
@@ -440,15 +438,15 @@ void	vSysTimingTest(void) {
 	uint32_t	uClock, uSecs ;
 	uClock	= GET_CLOCK_COUNTER() ;
 	uSecs	= xClockDelayUsec(100) ;
-	PRINT("Delay=%'u uS\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
+	printfx("Delay=%'u uS\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
 
 	uClock	= GET_CLOCK_COUNTER() ;
 	uSecs	= xClockDelayUsec(1000) ;
-	PRINT("Delay=%'u uS\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
+	printfx("Delay=%'u uS\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
 
 	uClock	= GET_CLOCK_COUNTER() ;
 	uSecs	= xClockDelayUsec(10000) ;
-	PRINT("Delay=%'u uS\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
+	printfx("Delay=%'u uS\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
 #endif
 #if 	(systimerTEST_TICKS == 1)						// Test TICK timers & Scatter groups
 	vSysTimingTestSet(systimerTICKS, "TICKS", 1) ;
