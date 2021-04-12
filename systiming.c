@@ -385,7 +385,9 @@ int64_t	i64TaskDelayUsec(uint32_t u32Period) {
 	int64_t i64Now ;
 	UBaseType_t CurPri = uxTaskPriorityGet(NULL) ;
 	vTaskPrioritySet(NULL, 0) ;
-	while ((i64Now = esp_timer_get_time() - i64Start) < i64Period)	taskYIELD() ;
+	while ((i64Now = esp_timer_get_time() - i64Start) < i64Period) {
+		taskYIELD() ;
+	}
 	vTaskPrioritySet(NULL, CurPri) ;
 	IF_PRINT(debugTIMING, "D=%lli   ", i64Now - i64Period) ;
 	return i64Now ;
