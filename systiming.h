@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include	"hal_config.h"
+
 #include	<stdbool.h>
 #include	<stdint.h>
 
@@ -14,24 +16,24 @@ extern "C" {
 
 // #################################################################################################
 
-#define	systimerSCATTER							1			// enable scatter graphs support
-#define	systimerSCATTER_GROUPS					10			// number of scatter graph groupings
-#define	systimerSCATTER_HDR_SHOW				0			// 0=no scatter heading ie intelligent display
+#define	systimerSCATTER				1			// enable scatter graphs support
+#define	systimerSCATTER_GROUPS		10			// number of scatter graph groupings
+#define	systimerSCATTER_CLOCKS		0
 
 #if		(systimerSCATTER == 1)
-	#define	IF_SYSTIMER_INIT(T,n,t,tag, ...)	if (T) vSysTimerInit(n, t, tag, ##__VA_ARGS__)
+	#define	IF_SYSTIMER_INIT(T,n,t,tag, ...)	if (T && (n<32)) vSysTimerInit(n, t, tag, ##__VA_ARGS__)
 #else
 	// Allows macro to take scatter parameters (hence avoid errors if used in macro definition)
 	// but discard values passed
-	#define	IF_SYSTIMER_INIT(T,n,t,tag, ...)	if (T) vSysTimerInit(n,t,tag)
+	#define	IF_SYSTIMER_INIT(T,n,t,tag, ...)	if (T && (n<32)) vSysTimerInit(n,t,tag)
 #endif
 
-#define	IF_SYSTIMER_START(T,y)					if (T) xSysTimerStart(y)
-#define	IF_SYSTIMER_STOP(T,y)					if (T) xSysTimerStop(y)
-#define	IF_SYSTIMER_RESET(T,y)					if (T) xSysTimerReset(y)
+#define	IF_SYSTIMER_START(T,n)					if (T && (n<32)) xSysTimerStart(n)
+#define	IF_SYSTIMER_STOP(T,n)					if (T && (n<32)) xSysTimerStop(n)
+#define	IF_SYSTIMER_RESET(T,n)					if (T && (n<32)) xSysTimerReset(n)
 
-#define	IF_SYSTIMER_SHOW(T,m)					if (T) vSysTimerShow(m)
-#define	IF_SYSTIMER_SHOW_NUM(T,n)				if (T) vSysTimerShow(1 << n)
+#define	IF_SYSTIMER_SHOW(T,n)					if (T && (n<32)) vSysTimerShow(n)
+#define	IF_SYSTIMER_SHOW_NUM(T,n)				if (T && (n<32)) vSysTimerShow(1 << n)
 
 // ################################# Process timer support #########################################
 
