@@ -45,17 +45,41 @@ enum {
 //	systimerHTTP,
 //	systimerFOTA,
 //	systimerSLOG,
+// ################### OPTIONAL TASKS ####################
+#if	(SW_GUI > 0)
+	systimerGUI0, systimerGUI1, systimerGUI2,
+#endif
+// ####################### DEVICES #######################
+#if	(halHAS_PCA9555 > 0)
 	systimerPCA9555,
+#endif
+#if (halHAS_ONEWIRE > 0)
 	systimerOW1, systimerOW2,
-	systimerDS248xA, systimerDS248xB, systimerDS248xC, systimerDS248xD,  systimerDS248xE,  systimerDS248xF,
+#endif
+#if	(halHAS_DS248X > 0)
+	systimerDS248xA, systimerDS248xB, systimerDS248xC, systimerDS248xD, systimerDS248xE, systimerDS248xF,
+#endif
+#if	(halHAS_DS18X20 > 0)
 	systimerDS1820A,systimerDS1820B,
+#endif
+#if	(halHAS_DS1990X > 0)
 	systimerDS1990,
-//	systimerM90EX6,
+#endif
+#if	(halHAS_M90E26 > 0)
+	systimerM90EX6,
+#endif
+#if	(halHAS_MCP342X > 0)
 	systimerMCP342X,
-	systimerACT_S0, systimerACT_S1, systimerACT_S2, systimerACT_S3, systimerACT_SX,
+#endif
+#if	(halHAS_SSD1306 > 0)
 	systimerSSD1306A, systimerSSD1306B,
-	systimerILI9341_1, systimerILI9341_2,
-//	systimerTFTP,										// TFTP task execution timing...
+#endif
+#if (halHAS_ILI9341 > 0)
+	systimerILI9341a, systimerILI9341b,
+#endif
+
+// ################### OPTIONAL TASKS ####################
+#if	(SW_GUI == 0)
 	systimerGUI0, systimerGUI1, systimerGUI2,
 	systimerMAX_NUM,									// last in list, define all required above here
 
@@ -64,18 +88,37 @@ enum {
 	systimerHTTP = 31,
 	systimerFOTA = 31,
 	systimerSLOG = 31,
-//	systimerPCA9555 = 31,
-//	systimerOW1 = 31, systimerOW2 = 31,
-//	systimerDS248xA = 31, systimerDS248xB = 31, systimerDS248xC = 31, systimerDS248xD = 31, systimerDS248xE = 31, systimerDS248xF = 31,
-//	systimerDS1820A = 31, systimerDS1820B = 31,
-//	systimerDS1990 = 31,
-	systimerM90EX6 = 31,
-//	systimerMCP342X = 31,
 //	systimerACT_S0 = 31, systimerACT_S1 = 31, systimerACT_S2 = 31, systimerACT_S3 = 31, systimerACT_SX = 31,
-//	systimerSSD1306A = 31, systimerSSD1306B = 31,
-//	systimerILI9341_1 = 31, systimerili9341_2 = 31,
 	systimerTFTP = 31,
-//	systimerGUI0 = 31, systimerGUI1 = 31, systimerGUI2 = 31,
+#endif
+// ####################### DEVICES #######################
+#if	(halHAS_PCA9555 == 0)
+	systimerPCA9555,
+#endif
+#if	(halHAS_ONEWIRE == 0)
+	systimerOW1, systimerOW2,
+#endif
+#if	(halHAS_DS248X == 0)
+	systimerDS248xA, systimerDS248xB, systimerDS248xC, systimerDS248xD, systimerDS248xE, systimerDS248xF,
+#endif
+#if	(halHAS_DS18X20 == 0)
+	systimerDS1820A, systimerDS1820B,
+#endif
+#if	(halHAS_DS1990X == 0)
+	systimerDS1990,
+#endif
+#if	(halHAS_M90E26 == 0)
+	systimerM90EX6,
+#endif
+#if	(halHAS_MCP342X == 0)
+	systimerMCP342X,
+#endif
+#if	(halHAS_SSD1306 == 0)
+	systimerSSD1306A, systimerSSD1306B,
+#endif
+#if	(halHAS_ILI9341 == 0)
+	systimerILI9341a, systimerILI9341b,
+#endif
 } ;
 
 // ######################################### Data structures #######################################
