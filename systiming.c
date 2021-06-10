@@ -3,9 +3,9 @@
  * Copyright 2014-20 Andre M Maree / KSS Technologies (Pty) Ltd.
  */
 
+#include	"hal_config.h"
 #include	"systiming.h"
 #include	"printfx.h"									// +x_definitions +stdarg +stdint +stdio
-#include	"hal_config.h"
 
 #if		defined(ESP_PLATFORM)
 	#include	"FreeRTOS_Support.h"
@@ -39,7 +39,7 @@ static uint32_t		STstat = 0, STtype = 0 ;
  */
 void	vSysTimerResetCounters(uint8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM) ;
-	IF_TRACK(debugTRACK, "#=%d", TimNum) ;
+	IF_TRACK(debugTRACK, "#=%d\n", TimNum) ;
 	systimer_t *pST	= &STdata[TimNum] ;
 	STstat			&= ~(1UL << TimNum) ;					// clear active status ie STOP
 	pST->Sum		= 0ULL ;
@@ -67,7 +67,7 @@ void	vSysTimerResetCountersMask(uint32_t TimerMask) {
 
 void	vSysTimerInit(uint8_t TimNum, bool Type, const char * Tag, ...) {
 	IF_myASSERT(debugPARAM, TimNum < systimerMAX_NUM) ;
-	IF_TRACK(debugTRACK, "#=%d  T=%d '%s'", TimNum, Type, Tag) ;
+	IF_TRACK(debugTRACK, "#=%d  T=%d '%s'\n", TimNum, Type, Tag) ;
 	systimer_t *pST	= &STdata[TimNum] ;
 	pST->Tag	= Tag ;
 	if (Type) {
