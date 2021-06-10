@@ -40,11 +40,16 @@ extern "C" {
 enum { systimerTICKS, systimerCLOCKS } ;
 
 enum {
-	systimerL2, 		systimerL3,						// track Lx disconnected time & occurrences
-	systimerMQTT_RX,	systimerMQTT_TX,
+// ################# SYSTEM TASKS ########################
+//	systimerL2, 		systimerL3,						// track Lx disconnected time & occurrences
+//	systimerMQTT_RX,	systimerMQTT_TX,
 //	systimerHTTP,
+//	systimerACT_S0, systimerACT_S1, systimerACT_S2, systimerACT_S3, systimerACT_SX,
+	systimerI2Ca,systimerI2Cb,systimerI2Cc,systimerI2Cd,systimerI2Ce,systimerI2Cf,
 //	systimerFOTA,
 //	systimerSLOG,
+//	systimerTFTP,										// TFTP task execution timing...
+	systimerRTOS,
 // ################### OPTIONAL TASKS ####################
 #if	(SW_GUI > 0)
 	systimerGUI0, systimerGUI1, systimerGUI2,
@@ -77,19 +82,22 @@ enum {
 #if (halHAS_ILI9341 > 0)
 	systimerILI9341a, systimerILI9341b,
 #endif
+	systimerMAX_NUM,				// last in list, define all required above here
+	systimerINVALID = 32,			// maximum timers allowed, beyond here disabled.
+// ################# SYSTEM TASKS ########################
+	systimerL2, systimerL3,
+	systimerMQTT_RX, systimerMQTT_TX,
+	systimerHTTP,
+//	systimerI2Ca,systimerI2Cb,systimerI2Cc,systimerI2Cd,systimerI2Ce,systimerI2Cf,
+	systimerACT_S0, systimerACT_S1, systimerACT_S2, systimerACT_S3, systimerACT_SX,
+	systimerFOTA,
+//	systimerSLOG,
+//	systimerTFTP,
+//	systimerRTOS,
 
 // ################### OPTIONAL TASKS ####################
 #if	(SW_GUI == 0)
 	systimerGUI0, systimerGUI1, systimerGUI2,
-	systimerMAX_NUM,									// last in list, define all required above here
-
-// From here we list disabled timers to avoid compile errors
-//	systimerMQTT_RX = 31,	systimerMQTT_TX = 31,
-	systimerHTTP = 31,
-	systimerFOTA = 31,
-	systimerSLOG = 31,
-//	systimerACT_S0 = 31, systimerACT_S1 = 31, systimerACT_S2 = 31, systimerACT_S3 = 31, systimerACT_SX = 31,
-	systimerTFTP = 31,
 #endif
 // ####################### DEVICES #######################
 #if	(halHAS_PCA9555 == 0)
