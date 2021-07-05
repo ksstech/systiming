@@ -86,17 +86,15 @@ void	vSysTimerInit(uint8_t TimNum, int Type, const char * Tag, ...) {
 	pST->SGmin	= va_arg(vaList, uint32_t) ;			// Min
 	pST->SGmax	= va_arg(vaList, uint32_t) ;			// Max ;
 	IF_myASSERT(debugPARAM, pST->SGmin < pST->SGmax) ;
-	#if 	(CONFIG_FREERTOS_HZ < MILLIS_IN_SECOND)
 	if (Type == stMILLIS) {
+	#if 	(CONFIG_FREERTOS_HZ < MILLIS_IN_SECOND)
 		pST->SGmin /= (MILLIS_IN_SECOND / CONFIG_FREERTOS_HZ) ;
 		pST->SGmax /= (MILLIS_IN_SECOND / CONFIG_FREERTOS_HZ) ;
-	}
 	#elif	(CONFIG_FREERTOS_HZ > MILLIS_IN_SECOND)
-	if (Type == stMILLIS) {
 		pST->SGmin *= (CONFIG_FREERTOS_HZ / MILLIS_IN_SECOND) ;
 		pST->SGmax *= (CONFIG_FREERTOS_HZ / MILLIS_IN_SECOND) ;
-	}
 	#endif
+	}
 	va_end(vaList) ;
 #endif
 	IF_EXEC_1(debugINIT, vSysTimerShow, 0x7FFFFFFF) ;
