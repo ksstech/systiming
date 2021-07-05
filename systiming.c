@@ -129,8 +129,8 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM) ;
 	int Type = GetTT(TimNum) ;
 	IF_myASSERT(debugPARAM, Type < stMAX_TYPE) ;
-	STstat			&= ~(1UL << TimNum) ;			// mark as stopped
 	uint32_t tNow	= GetTimer(Type);
+	STstat &= ~(1UL << TimNum) ;
 	systimer_t *pST	= &STdata[TimNum] ;
 
 	#if	defined(ESP_PLATFORM) && !defined(CONFIG_FREERTOS_UNICORE)
@@ -143,26 +143,22 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 		return 0 ;
 	}
 	#endif
-	uint32_t tElap	= tNow - pST->Last ;
-	pST->Last		= tElap ;
-	pST->Sum		+= tElap ;
+	uint32_t tElap = tNow - pST->Last;
+	pST->Sum	+= tElap;
+	pST->Last	= tElap;
 	// update Min & Max if required
-	if (tElap < pST->Min) pST->Min = tElap ;
-	if (tElap > pST->Max) pST->Max = tElap ;
+	if (pST->Min > tElap) pST->Min = tElap ;
+	if (pST->Max < tElap) pST->Max = tElap ;
 #if		(systimerSCATTER == 1)
 	int32_t Idx ;
-	if (pST->Last <= pST->SGmin) {
-		Idx = 0 ;
-	} else if (pST->Last >= pST->SGmax) {
-		Idx = systimerSCATTER_GROUPS-1 ;
-	} else {
-		Idx = 1 + ((pST->Last - pST->SGmin) * (systimerSCATTER_GROUPS-2) ) / (pST->SGmax - pST->SGmin) ;
-	}
+	if (tElap <= pST->SGmin) Idx = 0 ;
+	else if (tElap >= pST->SGmax) Idx = systimerSCATTER_GROUPS-1 ;
+	else Idx = 1+ ((tElap-pST->SGmin)*(systimerSCATTER_GROUPS-2)) / (pST->SGmax-pST->SGmin);
 	++pST->Group[Idx] ;
-	IF_PRINT(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER_GROUPS-1, int32_t), "l=%u h=%u n=%u i=%d\n", pST->SGmin, pST->SGmax, pST->Last, Idx) ;
+	IF_PRINT(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER_GROUPS-1, int32_t), "l=%u h=%u n=%u i=%d\n", pST->SGmin, pST->SGmax, tElap, Idx) ;
 	IF_myASSERT(debugRESULT, INRANGE(0, Idx, systimerSCATTER_GROUPS-1, int32_t)) ;
 #endif
-	return pST->Last ;
+	return tElap;
 }
 
 /**
