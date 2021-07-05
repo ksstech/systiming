@@ -25,6 +25,7 @@
 
 #define	SetTT(i,x)					maskSET2B(STtype,i,x,uint64_t)
 #define	GetTT(i)					maskGET2B(STtype,i,uint64_t)
+#define GetTimer(t) ((t==stCLOCKS)?xthal_get_ccount():(t==stMICROS)?esp_timer_get_time():xTaskGetTickCount())
 
 // #################################### Local static variables #####################################
 
@@ -118,9 +119,7 @@ uint32_t xSysTimerStart(uint8_t TimNum) {
 #endif
 	STstat	|= (1UL << TimNum) ;						// Mark as started & running
 	STdata[TimNum].Count++ ;
-	return (STdata[TimNum].Last = (Type == stCLOCKS) ? xthal_get_ccount()
-								: (Type == stMICROS) ? esp_timer_get_time()
-								: xTaskGetTickCount()) ;
+	return STdata[TimNum].Last = GetTimer(Type);
 }
 
 /**
@@ -132,10 +131,8 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM) ;
 	int Type = GetTT(TimNum) ;
 	IF_myASSERT(debugPARAM, Type < stMAX_TYPE) ;
-	uint32_t tNow	= (Type == stCLOCKS) ? xthal_get_ccount()
-					: (Type == stMICROS) ? esp_timer_get_time()
-					: xTaskGetTickCount() ;
 	STstat			&= ~(1UL << TimNum) ;			// mark as stopped
+	uint32_t tNow	= GetTimer(Type);
 	systimer_t *pST	= &STdata[TimNum] ;
 
 	#if	defined(ESP_PLATFORM) && !defined(CONFIG_FREERTOS_UNICORE)
@@ -182,9 +179,7 @@ uint32_t xSysTimerIsRunning(uint8_t TimNum) {
 	if (STstat & (1 << TimNum)) {
 		int Type = GetTT(TimNum) ;
 		IF_myASSERT(debugPARAM, Type < stMAX_TYPE) ;
-		tNow	= (Type == stCLOCKS) ? xthal_get_ccount()
-				: (Type == stMICROS) ? esp_timer_get_time()
-				: xTaskGetTickCount() ;
+		tNow	= GetTimer(Type);
 		systimer_t * pST = &STdata[TimNum] ;
 		if (Type == stCLOCKS) {
 			if (tNow > pST->Last) tNow -= pST->Last ;	// Unlikely wrapped
