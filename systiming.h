@@ -148,28 +148,28 @@ typedef struct __attribute__((packed)) systimer_t {
 
 // ######################################### Public functions ######################################
 
-void	vSysTimerResetCounters(uint8_t TimNum) ;
-void	vSysTimerInit(uint8_t TimNum, int Type, const char * Tag, ...) ;
-void	vSysTimerResetCountersMask(uint32_t TimerMask) ;
+void vSysTimerResetCounters(uint8_t TimNum) ;
+void vSysTimerInit(uint8_t TimNum, int Type, const char * Tag, ...) ;
+void vSysTimerResetCountersMask(uint32_t TimerMask) ;
 
 uint32_t xSysTimerStart(uint8_t TimNum) ;
 uint32_t xSysTimerStop(uint8_t TimNum) ;
 uint32_t xSysTimerIsRunning(uint8_t TimNum) ;
-int		xSysTimerGetStatus(uint8_t TimNum, systimer_t *) ;
+int	xSysTimerGetStatus(uint8_t TimNum, systimer_t *) ;
 
 uint64_t xSysTimerGetElapsedClocks(uint8_t TimNum) ;
 uint64_t xSysTimerGetElapsedMicros(uint8_t TimNum) ;
 uint64_t xSysTimerGetElapsedMillis(uint8_t TimNum) ;
 uint64_t xSysTimerGetElapsedSecs(uint8_t TimNum) ;
 
-void	vSysTimerShow(uint32_t TimerMask) ;
+void vSysTimerShow(uint32_t TimerMask) ;
 
 int64_t i64TaskDelayUsec(uint32_t u32Period) ;
 
 uint32_t xClockDelayUsec(uint32_t uSec) ;
 uint32_t xClockDelayMsec(uint32_t mSec) ;
 
-void	vSysTimingTest(void) ;
+void vSysTimingTest(void) ;
 
 #ifdef __cplusplus
 }

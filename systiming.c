@@ -3,15 +3,11 @@
  * Copyright 2014-20 Andre M Maree / KSS Technologies (Pty) Ltd.
  */
 
-#include	"hal_config.h"
+#include	<string.h>
+
 #include	"systiming.h"
 #include	"printfx.h"									// +x_definitions +stdarg +stdint +stdio
-
-#if		defined(ESP_PLATFORM)
-	#include	"FreeRTOS_Support.h"
-#endif
-
-#include	<string.h>
+#include	"FreeRTOS_Support.h"
 
 #define	debugFLAG					0xC000
 #define	debugINIT					(debugFLAG & 0x0001)
@@ -43,7 +39,7 @@ static uint64_t		STtype = 0 ;
  * @brief	which allows for the type to be changed as well as specifying new Min/Max values.
  * @param 	TimNum
  */
-void	vSysTimerResetCounters(uint8_t TimNum) {
+void vSysTimerResetCounters(uint8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM) ;
 	IF_TRACK(debugTRACK, "#=%d\n", TimNum) ;
 	systimer_t *pST	= &STdata[TimNum] ;
@@ -64,7 +60,7 @@ void	vSysTimerResetCounters(uint8_t TimNum) {
  * @brief	which allows for the type to be changed as well as specifying new Min/Max values.
  * @param	TimerMask
  */
-void	vSysTimerResetCountersMask(uint32_t TimerMask) {
+void vSysTimerResetCountersMask(uint32_t TimerMask) {
 	uint32_t mask = 0x00000001 ;
 	systimer_t *pST	= STdata ;
 	for (uint8_t TimNum = 0; TimNum < stMAX_NUM; ++TimNum, ++pST) {
@@ -73,31 +69,31 @@ void	vSysTimerResetCountersMask(uint32_t TimerMask) {
 	}
 }
 
-void	vSysTimerInit(uint8_t TimNum, int Type, const char * Tag, ...) {
+void vSysTimerInit(uint8_t TimNum, int Type, const char * Tag, ...) {
 	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && (Type < stMAX_TYPE)) ;
 	IF_TRACK(debugINIT, "#=%d  T=%d '%s'\n", TimNum, Type, Tag) ;
 	systimer_t *pST	= &STdata[TimNum] ;
 	pST->Tag	= Tag ;
 	SetTT(TimNum, Type) ;
 	vSysTimerResetCounters(TimNum) ;
-#if		(systimerSCATTER == 1)
+#if	(systimerSCATTER == 1)
     va_list vaList ;
     va_start(vaList, Tag) ;
-	pST->SGmin	= va_arg(vaList, uint32_t) ;			// Min
-	pST->SGmax	= va_arg(vaList, uint32_t) ;			// Max ;
-	IF_myASSERT(debugPARAM, pST->SGmin < pST->SGmax) ;
+	pST->SGmin	= va_arg(vaList, uint32_t);				// Min
+	pST->SGmax	= va_arg(vaList, uint32_t);				// Max ;
+	IF_myASSERT(debugPARAM, pST->SGmin < pST->SGmax);
 	if (Type == stMILLIS) {
 	#if 	(CONFIG_FREERTOS_HZ < MILLIS_IN_SECOND)
-		pST->SGmin /= (MILLIS_IN_SECOND / CONFIG_FREERTOS_HZ) ;
-		pST->SGmax /= (MILLIS_IN_SECOND / CONFIG_FREERTOS_HZ) ;
+		pST->SGmin /= (MILLIS_IN_SECOND / CONFIG_FREERTOS_HZ);
+		pST->SGmax /= (MILLIS_IN_SECOND / CONFIG_FREERTOS_HZ);
 	#elif	(CONFIG_FREERTOS_HZ > MILLIS_IN_SECOND)
-		pST->SGmin *= (CONFIG_FREERTOS_HZ / MILLIS_IN_SECOND) ;
-		pST->SGmax *= (CONFIG_FREERTOS_HZ / MILLIS_IN_SECOND) ;
+		pST->SGmin *= (CONFIG_FREERTOS_HZ / MILLIS_IN_SECOND);
+		pST->SGmax *= (CONFIG_FREERTOS_HZ / MILLIS_IN_SECOND);
 	#endif
 	}
-	va_end(vaList) ;
+	va_end(vaList);
 #endif
-	IF_EXEC_1(debugINIT, vSysTimerShow, 0x7FFFFFFF) ;
+	IF_EXEC_1(debugINIT, vSysTimerShow, 0x7FFFFFFF);
 }
 
 /**
@@ -189,7 +185,7 @@ uint32_t xSysTimerIsRunning(uint8_t TimNum) {
  * @param	pST
  * @return	Type
  */
-int		xSysTimerGetStatus(uint8_t TimNum, systimer_t * pST) {
+int	xSysTimerGetStatus(uint8_t TimNum, systimer_t * pST) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM && halCONFIG_inSRAM(pST)) ;
 	memcpy(pST, &STdata[TimNum], sizeof(systimer_t)) ;
 	return GetTT(TimNum) ;
@@ -234,7 +230,7 @@ uint64_t xSysTimerGetElapsedSecs(uint8_t TimNum) {
  * @param	tMask 8bit bitmapped flag to select timer(s) to display
  * @return	none
  */
-void	vSysTimerShow(uint32_t TimerMask) {
+void vSysTimerShow(uint32_t TimerMask) {
 	for (int Type = 0; Type < stMAX_TYPE; ++Type) {
 		uint32_t Mask = 0x00000001 ;
 		int HdrDone = 0 ;
@@ -336,7 +332,7 @@ uint32_t xClockDelayMsec(uint32_t mSec) {
 #define	systimerTEST_TICKS			1
 #define	systimerTEST_CLOCKS			1
 
-void	vSysTimingTestSet(uint32_t Type, const char * Tag, uint32_t Delay) {
+void vSysTimingTestSet(uint32_t Type, const char * Tag, uint32_t Delay) {
 	for (uint8_t Idx = 0; Idx < stMAX_NUM; ++Idx) {
 		vSysTimerInit(Idx, Type, Tag, myMS_TO_TICKS(Delay), myMS_TO_TICKS(Delay * systimerSCATTER_GROUPS)) ;
 	}
@@ -348,7 +344,7 @@ void	vSysTimingTestSet(uint32_t Type, const char * Tag, uint32_t Delay) {
 	vSysTimerShow(0xFFFFFFFF) ;
 }
 
-void	vSysTimingTest(void) {
+void vSysTimingTest(void) {
 #if		(systimerTEST_DELAY == 1)						// Test the uSec delays
 	uint32_t	uClock, uSecs ;
 	uClock	= xthal_get_ccount() ;
