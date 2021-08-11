@@ -3,11 +3,11 @@
  * Copyright 2014-20 Andre M Maree / KSS Technologies (Pty) Ltd.
  */
 
-#include	<string.h>
-
 #include	"systiming.h"
-#include	"printfx.h"									// +x_definitions +stdarg +stdint +stdio
+#include	"printfx.h"				// +x_definitions +stdarg +stdint +stdio
 #include	"FreeRTOS_Support.h"
+
+#include	<string.h>
 
 #define	debugFLAG					0xC000
 #define	debugINIT					(debugFLAG & 0x0001)
