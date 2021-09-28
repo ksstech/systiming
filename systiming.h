@@ -7,9 +7,6 @@
 
 #include	"hal_config.h"
 
-//#include	<stdbool.h>
-//#include	<stdint.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -40,7 +37,7 @@ enum { stMILLIS, stMICROS, stCLOCKS, stMAX_TYPE } ;
 
 enum {
 // ################# SYSTEM TASKS ########################
-//	stL2, 		stL3,						// track Lx disconnected time & occurrences
+	stL2, 		stL3,						// track Lx disconnected time & occurrences
 //	stMQTT_RX,	stMQTT_TX,
 //	stHTTP,
 //	stACT_S0, stACT_S1, stACT_S2, stACT_S3, stACT_SX,
@@ -61,7 +58,7 @@ enum {
 	stOW1, stOW2,
 #endif
 #if	(halHAS_DS248X > 0)
-	stDS248xA, stDS248xB, stDS248xC, stDS248xD, stDS248xE, stDS248xF,
+	stDS248xIO, stDS248x1R, stDS248xWR, stDS248xRD, stDS248xST,
 #endif
 #if	(halHAS_DS18X20 > 0)
 	stDS1820A,stDS1820B,
@@ -70,7 +67,7 @@ enum {
 	stDS1990,
 #endif
 #if	(halHAS_M90E26 > 0)
-	stM90EX6,
+	stM90EX6R,stM90EX6W,
 #endif
 #if	(halHAS_MCP342X > 0)
 	stMCP342X,
@@ -84,7 +81,7 @@ enum {
 	stMAX_NUM,				// last in list, define all required above here
 	stINVALID = 31,			// maximum timers allowed, beyond here disabled.
 // ################# SYSTEM TASKS ########################
-	stL2=31, stL3=31,
+//	stL2=31, stL3=31,
 	stMQTT_RX=31, stMQTT_TX=31,
 	stHTTP=31,
 	stACT_S0=31, stACT_S1=31, stACT_S2=31, stACT_S3=31, stACT_SX=31,
@@ -106,7 +103,7 @@ enum {
 	stOW1=31, stOW2=31,
 #endif
 #if	(halHAS_DS248X == 0)
-	stDS248xA=31, stDS248xB=31, stDS248xC=31, stDS248xD=31, stDS248xE=31, stDS248xF=31,
+	stDS248xIO=31, stDS248x1R=31, stDS248xWR=31, stDS248xRD=31, stDS248xST=31,
 #endif
 #if	(halHAS_DS18X20 == 0)
 	stDS1820A=31, stDS1820B=31,
@@ -115,7 +112,7 @@ enum {
 	stDS1990=31,
 #endif
 #if	(halHAS_M90E26 == 0)
-	stM90EX6=31,
+	stM90EX6R=31,stM90EX6W=31,
 #endif
 #if	(halHAS_MCP342X == 0)
 	stMCP342X=31,
