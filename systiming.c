@@ -9,7 +9,7 @@
 
 #include	<string.h>
 
-#define	debugFLAG					0xC000
+#define	debugFLAG					0xE000
 #define	debugINIT					(debugFLAG & 0x0001)
 
 #define	debugTIMING					(debugFLAG_GLOBAL & debugFLAG & 0x1000)
@@ -40,8 +40,7 @@ static uint64_t		STtype = 0 ;
  * @param 	TimNum
  */
 void vSysTimerResetCounters(uint8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM) ;
-	IF_TRACK(debugTRACK, "#=%d\n", TimNum) ;
+	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
 	systimer_t *pST	= &STdata[TimNum] ;
 	STstat		&= ~(1UL << TimNum) ;					// clear active status ie STOP
 	pST->Sum	= 0ULL ;
@@ -73,26 +72,26 @@ void vSysTimerInit(uint8_t TimNum, int Type, const char * Tag, ...) {
 	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && (Type < stMAX_TYPE)) ;
 	IF_TRACK(debugINIT, "#=%d  T=%d '%s'\n", TimNum, Type, Tag) ;
 	systimer_t *pST	= &STdata[TimNum] ;
-	pST->Tag	= Tag ;
-	SetTT(TimNum, Type) ;
-	vSysTimerResetCounters(TimNum) ;
-#if	(systimerSCATTER == 1)
-    va_list vaList ;
-    va_start(vaList, Tag) ;
-	pST->SGmin	= va_arg(vaList, uint32_t);				// Min
-	pST->SGmax	= va_arg(vaList, uint32_t);				// Max ;
+	pST->Tag = Tag;
+	SetTT(TimNum, Type);
+	vSysTimerResetCounters(TimNum);
+	#if	(systimerSCATTER == 1)
+    va_list vaList;
+    va_start(vaList, Tag);
+	pST->SGmin	= va_arg(vaList, uint32_t);
+	pST->SGmax	= va_arg(vaList, uint32_t);
 	IF_myASSERT(debugPARAM, pST->SGmin < pST->SGmax);
 	if (Type == stMILLIS) {
-	#if 	(CONFIG_FREERTOS_HZ < MILLIS_IN_SECOND)
+		#if (CONFIG_FREERTOS_HZ < MILLIS_IN_SECOND)
 		pST->SGmin /= (MILLIS_IN_SECOND / CONFIG_FREERTOS_HZ);
 		pST->SGmax /= (MILLIS_IN_SECOND / CONFIG_FREERTOS_HZ);
-	#elif	(CONFIG_FREERTOS_HZ > MILLIS_IN_SECOND)
+		#elif (CONFIG_FREERTOS_HZ > MILLIS_IN_SECOND)
 		pST->SGmin *= (CONFIG_FREERTOS_HZ / MILLIS_IN_SECOND);
 		pST->SGmax *= (CONFIG_FREERTOS_HZ / MILLIS_IN_SECOND);
-	#endif
+		#endif
 	}
 	va_end(vaList);
-#endif
+	#endif
 	IF_EXEC_1(debugINIT, vSysTimerShow, 0x7FFFFFFF);
 }
 
