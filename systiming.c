@@ -238,9 +238,9 @@ void vSysTimerShow(uint32_t TimerMask) {
 			if ((TimerMask & Mask) && Type == GetTT(Num) && pST->Count) {
 				if (HdrDone == 0) {
 					printfx("\n%C| # |  Name  | Count |Last%s%C",
-						xpfSGR(colourFG_CYAN, 0, 0, 0),
+						colourFG_CYAN,
 						Type==stMILLIS ? stHDR_TICKS : Type==stMICROS ? stHDR_MICROS : stHDR_CLOCKS,
-						xpfSGR(attrRESET, 0, 0, 0)) ;
+						attrRESET);
 				#if defined(ESP_PLATFORM) && !defined(CONFIG_FREERTOS_UNICORE)
 					printfx(Type==stCLOCKS ? "X-MCU-Y|\n" : "\n") ;
 				#else
