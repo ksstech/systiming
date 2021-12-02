@@ -235,32 +235,27 @@ void vSysTimerShow(uint32_t TimerMask) {
 		int HdrDone = 0 ;
 		for (int Num = 0; Num < stMAX_NUM; Mask <<= 1, ++Num) {
 			systimer_t * pST = &STdata[Num] ;
-			if ((TimerMask & Mask) && Type == GetTT(Num) && pST->Count) {
+			if ((TimerMask & Mask) && (Type == GetTT(Num)) && pST->Count) {
 				if (HdrDone == 0) {
-					printfx("\n%C| # |  Name  | Count |Last%s%C",
-						colourFG_CYAN,
-						Type==stMILLIS ? stHDR_TICKS : Type==stMICROS ? stHDR_MICROS : stHDR_CLOCKS,
+					printfx("%C| # |  Name  | Count |Last%s%C", colourFG_CYAN,
+						(Type == stMILLIS) ? stHDR_TICKS :
+						(Type == stMICROS) ? stHDR_MICROS : stHDR_CLOCKS,
 						attrRESET);
-				#if defined(ESP_PLATFORM) && !defined(CONFIG_FREERTOS_UNICORE)
-					printfx(Type==stCLOCKS ? "X-MCU-Y|\n" : "\n") ;
-				#else
-					printfx("\n") ;
-				#endif
-					HdrDone = 1 ;
+					#if defined(ESP_PLATFORM) && !defined(CONFIG_FREERTOS_UNICORE)
+					if (Type == stCLOCKS)
+						printfx("X-MCU-Y|");
+					#endif
+					printfx("\n");
+					HdrDone = 1;
 				}
 				printfx("|%2d%c|%8s|%'#7u|",
-					Num,
-					STstat & (1UL << Num) ? 'R' : ' ',
-					pST->Tag,
-					pST->Count) ;
+					Num, STstat & (1UL << Num) ? 'R' : ' ', pST->Tag, pST->Count);
 				printfx("%'#7u|%'#7u|%'#7u|%'#7llu|%'#7llu|",
-					pST->Last,
-					pST->Min,
-					pST->Max,
-					(uint64_t) (pST->Sum / (pST->Count == 0 ? 1 : pST->Count)),
-					pST->Sum) ;
+					pST->Last, pST->Min, pST->Max,
+					(uint64_t) (pST->Sum / (pST->Count == 0 ? 1 : pST->Count)), pST->Sum) ;
 				#if	defined(ESP_PLATFORM) && !defined(CONFIG_FREERTOS_UNICORE)
-				if (Type==stCLOCKS) printfx("%'#7u|", pST->Skip) ;
+				if (Type==stCLOCKS)
+					printfx("%'#7u|", pST->Skip) ;
 				#endif
 
 				#if	(systimerSCATTER == 1)
@@ -281,10 +276,11 @@ void vSysTimerShow(uint32_t TimerMask) {
 					}
 				}
 				#endif
-				printfx("\n") ;
+				printfx("\n");		// end of scatter groups for specific timer
 			}
 		}
 	}
+	printfx("\n") ;
 }
 
 // ################################### RTOS + HW delay support #####################################
