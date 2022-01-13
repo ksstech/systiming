@@ -72,6 +72,9 @@ enum {
 #if	(halHAS_MCP342X > 0)
 	stMCP342X,
 #endif
+#if	(halHAS_SI70XX > 0)
+	stSI70XX,
+#endif
 #if	(halHAS_SSD1306 > 0)
 	stSSD1306A, stSSD1306B,
 #endif
@@ -116,6 +119,9 @@ enum {
 #endif
 #if	(halHAS_MCP342X == 0)
 	stMCP342X=31,
+#endif
+#if	(halHAS_SI70XX == 0)
+	stSI70XX=31,
 #endif
 #if	(halHAS_SSD1306 == 0)
 	stSSD1306A=31, stSSD1306B=31,
