@@ -70,7 +70,7 @@ void vSysTimerResetCountersMask(uint32_t TimerMask) {
 
 void vSysTimerInit(uint8_t TimNum, int Type, const char * Tag, ...) {
 	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && (Type < stMAX_TYPE)) ;
-	IF_TRACK(debugINIT, "#=%d  T=%d '%s'\n", TimNum, Type, Tag) ;
+	IF_TL(debugINIT, "#=%d  T=%d '%s'\n", TimNum, Type, Tag) ;
 	systimer_t *pST	= &STdata[TimNum] ;
 	pST->Tag = Tag;
 	SetTT(TimNum, Type);
@@ -78,9 +78,11 @@ void vSysTimerInit(uint8_t TimNum, int Type, const char * Tag, ...) {
 	#if	(systimerSCATTER == 1)
     va_list vaList;
     va_start(vaList, Tag);
+    // Assume default type is stMICROS so values in uSec
 	pST->SGmin	= va_arg(vaList, uint32_t);
 	pST->SGmax	= va_arg(vaList, uint32_t);
 	IF_myASSERT(debugPARAM, pST->SGmin < pST->SGmax);
+	// if stMILLIS handle uSec to Ticks conversion
 	if (Type == stMILLIS) {
 		#if (CONFIG_FREERTOS_HZ < MILLIS_IN_SECOND)
 		pST->SGmin /= (MILLIS_IN_SECOND / CONFIG_FREERTOS_HZ);
