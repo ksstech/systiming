@@ -127,10 +127,10 @@ enum {
 	stDS1990=31,
 #endif
 #if	(halHAS_LIS2HH12 == 0)
-	stLIS2HH12=31
+	stLIS2HH12=31,
 #endif
 #if	(halHAS_LTR329ALS == 0)
-	stLTR329ALS=31
+	stLTR329ALS=31,
 #endif
 #if	(halHAS_M90E26 == 0)
 	stM90EX6R=31,stM90EX6W=31,
