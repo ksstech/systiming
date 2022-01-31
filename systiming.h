@@ -38,9 +38,9 @@ enum { stMILLIS, stMICROS, stCLOCKS, stMAX_TYPE } ;
 enum {
 // ################# SYSTEM TASKS ########################
 	stL2, 		stL3,						// track Lx disconnected time & occurrences
-//	stMQTT_RX,	stMQTT_TX,
-//	stHTTP,
-//	stACT_S0, stACT_S1, stACT_S2, stACT_S3, stACT_SX,
+	stMQTT_RX,	stMQTT_TX,
+	stHTTP,
+	stACT_S0, stACT_S1, stACT_S2, stACT_S3, stACT_SX,
 	stI2Ca,stI2Cb,stI2Cc,stI2Cd,stI2Ce,stI2Cf,stI2Cg,
 //	stFOTA,
 //	stSLOG,,
@@ -97,9 +97,9 @@ enum {
 	stINVALID = 31,			// maximum timers allowed, beyond here disabled.
 // ################# SYSTEM TASKS ########################
 //	stL2=31, stL3=31,
-	stMQTT_RX=31, stMQTT_TX=31,
-	stHTTP=31,
-	stACT_S0=31, stACT_S1=31, stACT_S2=31, stACT_S3=31, stACT_SX=31,
+//	stMQTT_RX=31, stMQTT_TX=31,
+//	stHTTP=31,
+//	stACT_S0=31, stACT_S1=31, stACT_S2=31, stACT_S3=31, stACT_SX=31,
 //	stI2Ca=31, stI2Cb=31, stI2Cc=31, stI2Cd=31, stI2Ce=31, stI2Cf=31,stI2Cg=31,
 	stFOTA=31,
 	stSLOG=31,
@@ -153,7 +153,7 @@ enum {
 #if	(halHAS_ILI9341 == 0)
 	stILI9341a=31, stILI9341b=31,
 #endif
-} ;
+};
 
 // ######################################### Data structures #######################################
 
