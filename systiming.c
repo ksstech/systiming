@@ -166,7 +166,7 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
  */
 uint32_t xSysTimerIsRunning(uint8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM) ;
-	uint32_t	tNow = 0 ;
+	uint32_t tNow = 0 ;
 	if (STstat & (1 << TimNum)) {
 		int Type = GetTT(TimNum) ;
 		IF_myASSERT(debugPARAM, Type < stMAX_TYPE) ;
