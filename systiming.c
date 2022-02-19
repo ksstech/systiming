@@ -158,6 +158,11 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 	return tElap;
 }
 
+uint32_t xSysTimerToggle(uint8_t TimNum) {
+	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM) ;
+	return (STstat & (1 << TimNum)) ? xSysTimerStop(TimNum) : xSysTimerStart(TimNum);
+}
+
 /**
  * xSysTimerIsRunning() -  if timer is running, return value else 0
  * @param	TimNum

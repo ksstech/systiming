@@ -26,6 +26,7 @@ extern "C" {
 
 #define	IF_SYSTIMER_START(T,n)					if (T && (n < 31)) xSysTimerStart(n)
 #define	IF_SYSTIMER_STOP(T,n)					if (T && (n < 31)) xSysTimerStop(n)
+#define	IF_SYSTIMER_TOGGLE(T,n)					if (T && (n < 31)) xSysTimerToggle(n)
 #define	IF_SYSTIMER_RESET(T,n)					if (T && (n < 31)) xSysTimerReset(n)
 
 #define	IF_SYSTIMER_SHOW(T,n)					if (T && (n < 31)) vSysTimerShow(n)
@@ -180,6 +181,7 @@ void vSysTimerInit(uint8_t TimNum, int Type, const char * Tag, ...) ;
 void vSysTimerResetCountersMask(uint32_t TimerMask) ;
 uint32_t xSysTimerStart(uint8_t TimNum) ;
 uint32_t xSysTimerStop(uint8_t TimNum) ;
+uint32_t xSysTimerToggle(uint8_t TimNum);
 uint32_t xSysTimerIsRunning(uint8_t TimNum) ;
 int	xSysTimerGetStatus(uint8_t TimNum, systimer_t *) ;
 uint64_t xSysTimerGetElapsedClocks(uint8_t TimNum) ;
