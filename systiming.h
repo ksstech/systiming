@@ -47,6 +47,7 @@ enum {
 //	stSLOG,,
 //	stTFTP,										// TFTP task execution timing...
 	stRTOS,
+	stGPIO,
 // ################### OPTIONAL TASKS ####################
 #if	(SW_GUI > 0)
 	stGUI0, stGUI1,
@@ -106,7 +107,7 @@ enum {
 	stSLOG=31,
 	stTFTP=31,
 //	stRTOS=31,
-
+//	stGPIO=31,
 // ################### OPTIONAL TASKS ####################
 #if	(SW_GUI == 0)
 	stGUI0=31, stGUI1=31,
