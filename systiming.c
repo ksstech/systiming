@@ -70,7 +70,7 @@ void vSysTimerResetCountersMask(uint32_t TimerMask) {
 
 void vSysTimerInit(uint8_t TimNum, int Type, const char * Tag, ...) {
 	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && (Type < stMAX_TYPE)) ;
-	IF_TL(debugINIT, "#=%d  T=%d '%s'\n", TimNum, Type, Tag) ;
+	IF_PL(debugINIT, "#=%d  T=%d '%s'\n", TimNum, Type, Tag) ;
 	systimer_t *pST	= &STdata[TimNum] ;
 	pST->Tag = Tag;
 	SetTT(TimNum, Type);
@@ -148,11 +148,14 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 	if (pST->Max < tElap) pST->Max = tElap ;
 #if		(systimerSCATTER == 1)
 	int32_t Idx ;
-	if (tElap <= pST->SGmin) Idx = 0 ;
-	else if (tElap >= pST->SGmax) Idx = systimerSCATTER_GROUPS-1 ;
-	else Idx = 1+ ((tElap-pST->SGmin)*(systimerSCATTER_GROUPS-2)) / (pST->SGmax-pST->SGmin);
+	if (tElap <= pST->SGmin)
+		Idx = 0 ;
+	else if (tElap >= pST->SGmax)
+		Idx = systimerSCATTER_GROUPS-1 ;
+	else
+		Idx = 1+ ((tElap-pST->SGmin)*(systimerSCATTER_GROUPS-2)) / (pST->SGmax-pST->SGmin);
 	++pST->Group[Idx] ;
-	IF_PRINT(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER_GROUPS-1, int32_t), "l=%u h=%u n=%u i=%d\n", pST->SGmin, pST->SGmax, tElap, Idx) ;
+	IF_P(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER_GROUPS-1, int32_t), "l=%u h=%u n=%u i=%d\n", pST->SGmin, pST->SGmax, tElap, Idx) ;
 	IF_myASSERT(debugRESULT, INRANGE(0, Idx, systimerSCATTER_GROUPS-1, int32_t)) ;
 #endif
 	return tElap;
@@ -301,7 +304,7 @@ int64_t	i64TaskDelayUsec(uint32_t u32Period) {
 	while ((i64Now = esp_timer_get_time()-i64Start) < i64Period)
 		taskYIELD();
 	vTaskPrioritySet(NULL, CurPri) ;
-	IF_PRINT(debugTIMING, "D=%lli   ", i64Now - i64Period) ;
+	IF_P(debugTIMING, "D=%lli   ", i64Now - i64Period) ;
 	return i64Now ;
 }
 
