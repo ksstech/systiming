@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include	"hal_config.h"
+#include "hal_config.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,20 +17,20 @@ extern "C" {
 #define	systimerSCATTER_GROUPS		10			// number of scatter graph groupings
 
 #if		(systimerSCATTER == 1)
-	#define	IF_SYSTIMER_INIT(T,n,t,tag, ...)	if (T && (n < 31)) vSysTimerInit(n, t, tag, ##__VA_ARGS__)
+	#define	IF_SYSTIMER_INIT(T,n,t,tag, ...)	if (T && ((n) < 31)) vSysTimerInit(n,t,tag,##__VA_ARGS__)
 #else
 	// Allows macro to take scatter parameters (hence avoid errors if used in macro definition)
 	// but discard values passed
-	#define	IF_SYSTIMER_INIT(T,n,t,tag, ...)	if (T && (n < 31)) vSysTimerInit(n,t,tag)
+	#define	IF_SYSTIMER_INIT(T,n,t,tag, ...)	if (T && ((n) < 31)) vSysTimerInit(n,t,tag)
 #endif
 
-#define	IF_SYSTIMER_START(T,n)					if (T && (n < 31)) xSysTimerStart(n)
-#define	IF_SYSTIMER_STOP(T,n)					if (T && (n < 31)) xSysTimerStop(n)
-#define	IF_SYSTIMER_TOGGLE(T,n)					if (T && (n < 31)) xSysTimerToggle(n)
-#define	IF_SYSTIMER_RESET(T,n)					if (T && (n < 31)) xSysTimerReset(n)
+#define	IF_SYSTIMER_START(T,n)					if (T && ((n) < 31)) xSysTimerStart(n)
+#define	IF_SYSTIMER_STOP(T,n)					if (T && ((n) < 31)) xSysTimerStop(n)
+#define	IF_SYSTIMER_TOGGLE(T,n)					if (T && ((n) < 31)) xSysTimerToggle(n)
+#define	IF_SYSTIMER_RESET(T,n)					if (T && ((n) < 31)) xSysTimerReset(n)
 
-#define	IF_SYSTIMER_SHOW(T,n)					if (T && (n < 31)) vSysTimerShow(n)
-#define	IF_SYSTIMER_SHOW_NUM(T,n)				if (T && (n < 31)) vSysTimerShow(1 << n)
+#define	IF_SYSTIMER_SHOW(T,n)					if (T && ((n) < 31)) vSysTimerShow(n)
+#define	IF_SYSTIMER_SHOW_NUM(T,n)				if (T && ((n) < 31)) vSysTimerShow(1 << (n))
 
 // ################################# Process timer support #########################################
 
@@ -38,21 +38,25 @@ enum { stMILLIS, stMICROS, stCLOCKS, stMAX_TYPE } ;
 
 enum {
 // ################# SYSTEM TASKS ########################
-	stL2, 		stL3,						// track Lx disconnected time & occurrences
-	stMQTT_RX,	stMQTT_TX,
-	stHTTP,
-	stACT_S0, stACT_S1, stACT_S2, stACT_S3, stACT_SX,
-	stI2Ca,stI2Cb,stI2Cc,stI2Cd,stI2Ce,stI2Cf,stI2Cg,
+//	stL2, 		stL3,						// track Lx disconnected time & occurrences
+//	stMQTT_RX,	stMQTT_TX,
+//	stHTTP,
+//	stACT_S0, stACT_S1, stACT_S2, stACT_S3, stACT_SX,
+//	stI2Ca,stI2Cb,stI2Cc,stI2Cd,stI2Ce,stI2Cf,stI2Cg,
 //	stFOTA,
 //	stSLOG,,
 //	stTFTP,										// TFTP task execution timing...
-	stRTOS,
-	stGPIO,
+//	stRTOS,
+
 // ################### OPTIONAL TASKS ####################
 #if	(SW_GUI > 0)
 	stGUI0, stGUI1,
 #endif
+
 // ####################### DEVICES #######################
+#if (halSOC_DIG_IN > 0)
+	stGPDINa, stGPDINz = (stGPDINa + halSOC_DIG_IN - 1),
+#endif
 #if	(halHAS_PCA9555 > 0)
 	stPCA9555,
 #endif
@@ -63,7 +67,7 @@ enum {
 	stDS248xIO, stDS248x1R, stDS248xWR, stDS248xRD, stDS248xST,
 #endif
 #if	(halHAS_DS18X20 > 0)
-	stDS1820A,stDS1820B,
+	stDS1820A, stDS1820B,
 #endif
 #if	(halHAS_DS1990X > 0)
 	stDS1990,
@@ -75,7 +79,7 @@ enum {
 	stLTR329ALS,
 #endif
 #if	(halHAS_M90E26 > 0)
-	stM90EX6R,stM90EX6W,
+	stM90EX6R, stM90EX6W,
 #endif
 #if	(halHAS_MCP342X > 0)
 	stMCP342X,
@@ -97,22 +101,27 @@ enum {
 #endif
 	stMAX_NUM,				// last in list, define all required above here
 	stINVALID = 31,			// maximum timers allowed, beyond here disabled.
+
 // ################# SYSTEM TASKS ########################
-//	stL2=31, stL3=31,
-//	stMQTT_RX=31, stMQTT_TX=31,
-//	stHTTP=31,
-//	stACT_S0=31, stACT_S1=31, stACT_S2=31, stACT_S3=31, stACT_SX=31,
-//	stI2Ca=31, stI2Cb=31, stI2Cc=31, stI2Cd=31, stI2Ce=31, stI2Cf=31,stI2Cg=31,
+	stL2=31, stL3=31,
+	stMQTT_RX=31, stMQTT_TX=31,
+	stHTTP=31,
+	stACT_S0=31, stACT_S1=31, stACT_S2=31, stACT_S3=31, stACT_SX=31,
+	stI2Ca=31, stI2Cb=31, stI2Cc=31, stI2Cd=31, stI2Ce=31, stI2Cf=31,stI2Cg=31,
 	stFOTA=31,
 	stSLOG=31,
 	stTFTP=31,
-//	stRTOS=31,
-//	stGPIO=31,
+	stRTOS=31,
+
 // ################### OPTIONAL TASKS ####################
 #if	(SW_GUI == 0)
 	stGUI0=31, stGUI1=31,
 #endif
+
 // ####################### DEVICES #######################
+#if (halSOC_DIG_IN == 0)
+	stGPDINa=31, stGPDINz=31,
+#endif
 #if	(halHAS_PCA9555 == 0)
 	stPCA9555=31,
 #endif
