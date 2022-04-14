@@ -351,30 +351,30 @@ void vSysTimingTestSet(uint32_t Type, const char * Tag, uint32_t Delay) {
 }
 
 void vSysTimingTest(void) {
-#if		(systimerTEST_DELAY == 1)						// Test the uSec delays
+	#if	(systimerTEST_DELAY == 1)						// Test the uSec delays
 	uint32_t	uClock, uSecs ;
 	uClock	= xthal_get_ccount() ;
 	uSecs	= xClockDelayUsec(100) ;
-	printfx("Delay=%'u uS\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
+	printfx("Delay=%`u uS\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
 
 	uClock	= xthal_get_ccount() ;
 	uSecs	= xClockDelayUsec(1000) ;
-	printfx("Delay=%'u uS\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
+	printfx("Delay=%`u uS\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
 
 	uClock	= xthal_get_ccount() ;
 	uSecs	= xClockDelayUsec(10000) ;
-	printfx("Delay=%'u uS\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
-#endif
-#if 	(systimerTEST_TICKS == 1)						// Test TICK timers & Scatter groups
+	printfx("Delay=%`u uS\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
+	#endif
+	#if (systimerTEST_TICKS == 1)						// Test TICK timers & Scatter groups
 	vSysTimingTestSet(stMILLIS, "TICKS", 1) ;
 	vSysTimingTestSet(stMILLIS, "TICKS", 10) ;
 	vSysTimingTestSet(stMILLIS, "TICKS", 100) ;
 	vSysTimingTestSet(stMILLIS, "TICKS", 1000) ;
-#endif
-#if 	(stTEST_CLOCKS == 1)						// Test CLOCK timers & Scatter groups
+	#endif
+	#if (stTEST_CLOCKS == 1)						// Test CLOCK timers & Scatter groups
 	vSysTimingTestSet(stCLOCKS, "CLOCKS", 1) ;
 	vSysTimingTestSet(stCLOCKS, "CLOCKS", 10) ;
 	vSysTimingTestSet(stCLOCKS, "CLOCKS", 100) ;
 	vSysTimingTestSet(stCLOCKS, "CLOCKS", 1000) ;
-#endif
+	#endif
 }
