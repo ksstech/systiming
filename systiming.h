@@ -38,14 +38,13 @@ enum { stMILLIS, stMICROS, stCLOCKS, stMAX_TYPE } ;
 
 enum {
 // ################# SYSTEM TASKS ########################
-//	stL2, 		stL3,						// track Lx disconnected time & occurrences
-//	stMQTT_RX,	stMQTT_TX,
+//	stL2, stL3,						// track Lx disconnected time & occurrences
+//	stMQTT_RX, stMQTT_TX,
 //	stHTTP,
 //	stACT_S0, stACT_S1, stACT_S2, stACT_S3, stACT_SX,
 //	stI2Ca,stI2Cb,stI2Cc,stI2Cd,stI2Ce,stI2Cf,stI2Cg,
 //	stFOTA,
-//	stSLOG,,
-//	stTFTP,										// TFTP task execution timing...
+//	stTFTP,							// TFTP task execution timing...
 //	stRTOS,
 
 // ################### OPTIONAL TASKS ####################
@@ -109,7 +108,6 @@ enum {
 	stACT_S0=31, stACT_S1=31, stACT_S2=31, stACT_S3=31, stACT_SX=31,
 	stI2Ca=31, stI2Cb=31, stI2Cc=31, stI2Cd=31, stI2Ce=31, stI2Cf=31,stI2Cg=31,
 	stFOTA=31,
-	stSLOG=31,
 	stTFTP=31,
 	stRTOS=31,
 
@@ -187,7 +185,7 @@ typedef struct __attribute__((packed)) systimer_t {
 // ######################################### Public functions ######################################
 
 void vSysTimerResetCounters(uint8_t TimNum) ;
-void vSysTimerInit(uint8_t TimNum, int Type, const char * Tag, ...) ;
+void vSysTimerInit(uint8_t TimNum, int Type, const char * Tag, ...);
 void vSysTimerResetCountersMask(uint32_t TimerMask) ;
 uint32_t xSysTimerStart(uint8_t TimNum) ;
 uint32_t xSysTimerStop(uint8_t TimNum) ;
