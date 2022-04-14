@@ -13,10 +13,9 @@ extern "C" {
 
 // #################################################################################################
 
-#define	systimerSCATTER				1			// enable scatter graphs support
-#define	systimerSCATTER_GROUPS		10			// number of scatter graph groupings
+#define	systimerSCATTER				10			// >2 to enable scatter support
 
-#if		(systimerSCATTER == 1)
+#if	(systimerSCATTER > 2)
 	#define	IF_SYSTIMER_INIT(T,n,t,tag, ...)	if (T && ((n) < 31)) vSysTimerInit(n,t,tag,##__VA_ARGS__)
 #else
 	// Allows macro to take scatter parameters (hence avoid errors if used in macro definition)
@@ -170,14 +169,14 @@ typedef struct __attribute__((packed)) systimer_t {
 	const char * Tag ;
 	uint64_t	Sum ;
 	uint32_t	Last, Count, Max, Min ;
-#if	defined(ESP_PLATFORM) && !defined(CONFIG_FREERTOS_UNICORE)
 	uint32_t	Skip ;
 #endif
-#if	(systimerSCATTER == 1)
 	uint32_t	SGmin, SGmax ;
 	uint32_t	Group[systimerSCATTER_GROUPS] ;
 #endif
 } systimer_t ;
+	#if	(systimerSCATTER > 2)
+	#ifndef CONFIG_FREERTOS_UNICORE
 
 // ######################################### Public variables ######################################
 

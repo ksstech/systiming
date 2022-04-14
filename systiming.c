@@ -29,7 +29,7 @@ static systimer_t	STdata[stMAX_NUM] = { 0 } ;
 static uint32_t		STstat = 0 ;						// 1 = Running
 static uint64_t		STtype = 0 ;
 
-#if		defined(ESP_PLATFORM) && !defined(CONFIG_FREERTOS_UNICORE)
+#ifndef CONFIG_FREERTOS_UNICORE
 	static uint32_t	STcore = 0 ;						// Core# 0/1
 #endif
 
@@ -48,7 +48,7 @@ void vSysTimerResetCounters(uint8_t TimNum) {
 	pST->Count	= 0 ;
 	pST->Max	= 0 ;
 	pST->Min	= 0xFFFFFFFF ;
-#if		(systimerSCATTER == 1)
+	#if	(systimerSCATTER > 2)
 	memset(&pST->Group, 0, SO_MEM(systimer_t, Group)) ;
 #endif
 }
@@ -75,7 +75,7 @@ void vSysTimerInit(uint8_t TimNum, int Type, const char * Tag, ...) {
 	pST->Tag = Tag;
 	SetTT(TimNum, Type);
 	vSysTimerResetCounters(TimNum);
-	#if	(systimerSCATTER == 1)
+	#if	(systimerSCATTER > 2)
     va_list vaList;
     va_start(vaList, Tag);
     // Assume default type is stMICROS so values in uSec
@@ -106,7 +106,7 @@ uint32_t xSysTimerStart(uint8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM) ;
 	int Type = GetTT(TimNum) ;
 	IF_myASSERT(debugPARAM, Type < stMAX_TYPE) ;
-#if		defined(ESP_PLATFORM) && !defined(CONFIG_FREERTOS_UNICORE)
+	#ifndef CONFIG_FREERTOS_UNICORE
 	if (Type == stCLOCKS) {
 		if (xPortGetCoreID()) STcore |= (1UL << TimNum) ;	// Running on Core 1
 		else STcore &= ~(1UL << TimNum) ;					// Running on Core 0
@@ -130,7 +130,7 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 	STstat &= ~(1UL << TimNum) ;
 	systimer_t *pST	= &STdata[TimNum] ;
 
-	#if	defined(ESP_PLATFORM) && !defined(CONFIG_FREERTOS_UNICORE)
+	#ifndef CONFIG_FREERTOS_UNICORE
 	/* Adjustments made to CCOUNT cause discrepancies between readings from different cores.
 	 * In order to filter out invalid/OOR values we verify whether the timer is being stopped
 	 * on the same MCU as it was started. If not, we ignore the timing values */
@@ -146,8 +146,8 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 	// update Min & Max if required
 	if (pST->Min > tElap) pST->Min = tElap ;
 	if (pST->Max < tElap) pST->Max = tElap ;
-#if		(systimerSCATTER == 1)
 	int32_t Idx ;
+	#if	(systimerSCATTER > 2)
 	if (tElap <= pST->SGmin)
 		Idx = 0 ;
 	else if (tElap >= pST->SGmax)
@@ -251,7 +251,7 @@ void vSysTimerShow(uint32_t TimerMask) {
 						(Type == stMILLIS) ? stHDR_TICKS :
 						(Type == stMICROS) ? stHDR_MICROS : stHDR_CLOCKS,
 						attrRESET);
-					#if defined(ESP_PLATFORM) && !defined(CONFIG_FREERTOS_UNICORE)
+					#ifndef CONFIG_FREERTOS_UNICORE
 					if (Type == stCLOCKS)
 						printfx("X-MCU-Y|");
 					#endif
@@ -263,19 +263,19 @@ void vSysTimerShow(uint32_t TimerMask) {
 				printfx("%'#7u|%'#7u|%'#7u|%'#7llu|%'#7llu|",
 					pST->Last, pST->Min, pST->Max,
 					(uint64_t) (pST->Sum / (pST->Count == 0 ? 1 : pST->Count)), pST->Sum) ;
-				#if	defined(ESP_PLATFORM) && !defined(CONFIG_FREERTOS_UNICORE)
 				if (Type==stCLOCKS)
 					printfx("%'#7u|", pST->Skip) ;
+				#ifndef CONFIG_FREERTOS_UNICORE
 				#endif
 
-				#if	(systimerSCATTER == 1)
+				#if	(systimerSCATTER > 2)
 				uint32_t Rlo, Rhi ;
-				for (int Idx = 0; Idx < systimerSCATTER_GROUPS; ++Idx) {
+				for (int Idx = 0; Idx < systimerSCATTER; ++Idx) {
 					if (pST->Group[Idx]) {
 						if (Idx == 0) {
 							Rlo = 0 ;
 							Rhi = pST->SGmin ;
-						} else if (Idx == (systimerSCATTER_GROUPS-1)) {
+						} else if (Idx == (systimerSCATTER-1)) {
 							Rlo = pST->SGmax ;
 							Rhi = 0xFFFFFFFF ;
 						} else {
@@ -340,9 +340,9 @@ uint32_t xClockDelayMsec(uint32_t mSec) {
 
 void vSysTimingTestSet(uint32_t Type, const char * Tag, uint32_t Delay) {
 	for (uint8_t Idx = 0; Idx < stMAX_NUM; ++Idx) {
-		vSysTimerInit(Idx, Type, Tag, myMS_TO_TICKS(Delay), myMS_TO_TICKS(Delay * systimerSCATTER_GROUPS)) ;
+		vSysTimerInit(Idx, Type, Tag, myMS_TO_TICKS(Delay), myMS_TO_TICKS(Delay * systimerSCATTER)) ;
 	}
-	for (uint32_t Steps = 0; Steps <= systimerSCATTER_GROUPS; ++Steps) {
+	for (uint32_t Steps = 0; Steps <= systimerSCATTER; ++Steps) {
 		for (uint32_t Count = 0; Count < stMAX_NUM; xSysTimerStart(Count++)) ;
 		vTaskDelay(pdMS_TO_TICKS((Delay * Steps) + 1)) ;
 		for (uint32_t Count = 0; Count < stMAX_NUM; xSysTimerStop(Count++)) ;
