@@ -21,7 +21,9 @@
 
 #define	SetTT(i,x)					maskSET2B(STtype,i,x,uint64_t)
 #define	GetTT(i)					maskGET2B(STtype,i,uint64_t)
-#define GetTimer(t) ((t==stCLOCKS)?xthal_get_ccount():(t==stMICROS)?esp_timer_get_time():xTaskGetTickCount())
+#define GetTimer(t) ((t == stCLOCKS) ? xthal_get_ccount() : \
+					(t == stMICROS) ? esp_timer_get_time() : \
+					xTaskGetTickCount())
 
 // #################################### Local static variables #####################################
 
@@ -50,7 +52,7 @@ void vSysTimerResetCounters(uint8_t TimNum) {
 	pST->Min	= 0xFFFFFFFF ;
 	#if	(systimerSCATTER > 2)
 	memset(&pST->Group, 0, SO_MEM(systimer_t, Group)) ;
-#endif
+	#endif
 }
 
 /**
@@ -108,11 +110,13 @@ uint32_t xSysTimerStart(uint8_t TimNum) {
 	IF_myASSERT(debugPARAM, Type < stMAX_TYPE) ;
 	#ifndef CONFIG_FREERTOS_UNICORE
 	if (Type == stCLOCKS) {
-		if (xPortGetCoreID()) STcore |= (1UL << TimNum) ;	// Running on Core 1
-		else STcore &= ~(1UL << TimNum) ;					// Running on Core 0
+		if (xPortGetCoreID())
+			STcore |= (1UL << TimNum);					// Running on Core 1
+		else
+			STcore &= ~(1UL << TimNum);					// Running on Core 0
 	}
-#endif
-	STstat	|= (1UL << TimNum) ;						// Mark as started & running
+	#endif
+	STstat	|= (1UL << TimNum);							// Mark as started & running
 	STdata[TimNum].Count++ ;
 	return STdata[TimNum].Last = GetTimer(Type);
 }
@@ -134,24 +138,26 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 	/* Adjustments made to CCOUNT cause discrepancies between readings from different cores.
 	 * In order to filter out invalid/OOR values we verify whether the timer is being stopped
 	 * on the same MCU as it was started. If not, we ignore the timing values */
-	uint8_t	xCoreID		= (STcore & (1UL << TimNum)) ? 1 : 0 ;
+	uint8_t	xCoreID	= (STcore & (1UL << TimNum)) ? 1 : 0 ;
 	if ((Type == stCLOCKS) && xCoreID != xPortGetCoreID()) {
 		++pST->Skip ;
 		return 0 ;
 	}
 	#endif
 	uint32_t tElap = tNow - pST->Last;
-	pST->Sum	+= tElap;
-	pST->Last	= tElap;
+	pST->Sum += tElap;
+	pST->Last = tElap;
 	// update Min & Max if required
-	if (pST->Min > tElap) pST->Min = tElap ;
-	if (pST->Max < tElap) pST->Max = tElap ;
-	int32_t Idx ;
+	if (pST->Min > tElap)
+		pST->Min = tElap;
+	if (pST->Max < tElap)
+		pST->Max = tElap;
 	#if	(systimerSCATTER > 2)
+	int Idx;
 	if (tElap <= pST->SGmin)
-		Idx = 0 ;
+		Idx = 0;
 	else if (tElap >= pST->SGmax)
-		Idx = systimerSCATTER_GROUPS-1 ;
+		Idx = systimerSCATTER-1;
 	else
 		Idx = 1+ ((tElap-pST->SGmin)*(systimerSCATTER_GROUPS-2)) / (pST->SGmax-pST->SGmin);
 	++pST->Group[Idx] ;
@@ -181,11 +187,15 @@ uint32_t xSysTimerIsRunning(uint8_t TimNum) {
 		tNow	= GetTimer(Type);
 		systimer_t * pST = &STdata[TimNum] ;
 		if (Type == stCLOCKS) {
-			if (tNow > pST->Last) tNow -= pST->Last ;	// Unlikely wrapped
-			else tNow += (0xFFFFFFFF - pST->Last) ;		// definitely wrapped
-		} else tNow -= pST->Last ;
+			if (tNow > pST->Last)
+				tNow -= pST->Last;						// Unlikely wrapped
+			else
+				tNow += (0xFFFFFFFF - pST->Last) ;		// definitely wrapped
+		} else {
+			tNow -= pST->Last;
+		}
 	}
-	return tNow ;
+	return tNow;
 }
 
 /**
