@@ -165,18 +165,18 @@ enum {
 
 // ######################################### Data structures #######################################
 
-typedef struct __attribute__((packed)) systimer_t {
-	const char * Tag ;
-	uint64_t	Sum ;
-	uint32_t	Last, Count, Max, Min ;
-	uint32_t	Skip ;
-#endif
-	uint32_t	SGmin, SGmax ;
-	uint32_t	Group[systimerSCATTER_GROUPS] ;
-#endif
-} systimer_t ;
+typedef struct __attribute__((packed)) {
+	uint32_t Count, Last, Min, Max;
+	uint64_t Sum;
+	const char * Tag;
 	#if	(systimerSCATTER > 2)
+	uint32_t SGmin, SGmax, Group[systimerSCATTER];
+	#endif
 	#ifndef CONFIG_FREERTOS_UNICORE
+	uint32_t Skip;
+	#endif
+} systimer_t;
+DUMB_STATIC_ASSERT(sizeof(systimer_t) == 24 + sizeof(char *) + 48 + 4);
 
 // ######################################### Public variables ######################################
 
