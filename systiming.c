@@ -349,7 +349,7 @@ uint32_t xClockDelayMsec(uint32_t mSec) {
 #define	systimerTEST_TICKS			1
 #define	systimerTEST_CLOCKS			1
 
-void vSysTimingTestSet(uint32_t Type, const char * Tag, uint32_t Delay) {
+void vSysTimingTestSet(uint32_t Type, char * Tag, uint32_t Delay) {
 	for (uint8_t Idx = 0; Idx < stMAX_NUM; ++Idx) {
 		vSysTimerInit(Idx, Type, Tag, myMS_TO_TICKS(Delay), myMS_TO_TICKS(Delay * systimerSCATTER)) ;
 	}
