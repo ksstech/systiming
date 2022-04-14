@@ -159,11 +159,11 @@ uint32_t xSysTimerStop(uint8_t TimNum) {
 	else if (tElap >= pST->SGmax)
 		Idx = systimerSCATTER-1;
 	else
-		Idx = 1+ ((tElap-pST->SGmin)*(systimerSCATTER_GROUPS-2)) / (pST->SGmax-pST->SGmin);
-	++pST->Group[Idx] ;
-	IF_P(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER_GROUPS-1, int32_t), "l=%u h=%u n=%u i=%d\n", pST->SGmin, pST->SGmax, tElap, Idx) ;
-	IF_myASSERT(debugRESULT, INRANGE(0, Idx, systimerSCATTER_GROUPS-1, int32_t)) ;
-#endif
+		Idx = 1 + ((tElap-pST->SGmin)*(systimerSCATTER-2)) / (pST->SGmax-pST->SGmin);
+	++pST->Group[Idx];
+	IF_P(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER-1, int), "l=%u h=%u n=%u i=%d\n", pST->SGmin, pST->SGmax, tElap, Idx);
+	IF_myASSERT(debugRESULT, INRANGE(0, Idx, systimerSCATTER-1, int));
+	#endif
 	return tElap;
 }
 
@@ -268,14 +268,13 @@ void vSysTimerShow(uint32_t TimerMask) {
 					printfx("\n");
 					HdrDone = 1;
 				}
-				printfx("|%2d%c|%8s|%'#7u|",
-					Num, STstat & (1UL << Num) ? 'R' : ' ', pST->Tag, pST->Count);
-				printfx("%'#7u|%'#7u|%'#7u|%'#7llu|%'#7llu|",
-					pST->Last, pST->Min, pST->Max,
-					(uint64_t) (pST->Sum / (pST->Count == 0 ? 1 : pST->Count)), pST->Sum) ;
-				if (Type==stCLOCKS)
-					printfx("%'#7u|", pST->Skip) ;
+				printfx("|%2d%c|%8s|%#7u|",
+					Num, (STstat & (1UL << Num)) ? 'R' : ' ', pST->Tag, pST->Count);
+				printfx("%#7u|%#7u|%#7u|%#7u|%#7llu|", pST->Last, pST->Min, pST->Max,
+					(uint32_t) (pST->Count ? (pST->Sum / pST->Count) : pST->Sum), pST->Sum);
 				#ifndef CONFIG_FREERTOS_UNICORE
+				if (Type == stCLOCKS)
+					printfx("%#7u|", pST->Skip);
 				#endif
 
 				#if	(systimerSCATTER > 2)
@@ -293,7 +292,7 @@ void vSysTimerShow(uint32_t TimerMask) {
 							Rlo	= ((Idx - 1) * Rtmp) + pST->SGmin;
 							Rhi = Rlo + Rtmp;
 						}
-						printfx("  #%d:%'#u->%'#u=%'#u", Idx, Rlo, Rhi, pST->Group[Idx]) ;
+						printfx("  %d:%u~%u=%u", Idx, Rlo, Rhi, pST->Group[Idx]);
 					}
 				}
 				#endif
