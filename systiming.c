@@ -289,8 +289,9 @@ void vSysTimerShow(uint32_t TimerMask) {
 							Rlo = pST->SGmax ;
 							Rhi = 0xFFFFFFFF ;
 						} else {
-							Rlo	= (Idx - 1) * (pST->SGmax - pST->SGmin) / (systimerSCATTER_GROUPS-2) + pST->SGmin ;
-							Rhi = Rlo + (pST->SGmax - pST->SGmin) / (systimerSCATTER_GROUPS-2) ;
+							uint32_t Rtmp = (pST->SGmax - pST->SGmin) / (systimerSCATTER-2);
+							Rlo	= ((Idx - 1) * Rtmp) + pST->SGmin;
+							Rhi = Rlo + Rtmp;
 						}
 						printfx("  #%d:%'#u->%'#u=%'#u", Idx, Rlo, Rhi, pST->Group[Idx]) ;
 					}
