@@ -47,7 +47,7 @@ enum {
 //	stRTOS,
 
 // ################### OPTIONAL TASKS ####################
-#if	(SW_GUI > 0)
+#if	(halUSE_GUI > 0)
 	stGUI0, stGUI1,
 #endif
 
@@ -111,7 +111,7 @@ enum {
 	stRTOS=31,
 
 // ################### OPTIONAL TASKS ####################
-#if	(SW_GUI == 0)
+#if	(halUSE_GUI == 0)
 	stGUI0=31, stGUI1=31,
 #endif
 
