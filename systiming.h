@@ -166,14 +166,14 @@ enum {
 // ######################################### Data structures #######################################
 
 typedef struct __attribute__((packed)) {
-	uint32_t Count, Last, Min, Max;
-	uint64_t Sum;
+	u32_t Count, Last, Min, Max;
+	u64_t Sum;
 	const char * Tag;
 	#if	(systimerSCATTER > 2)
-	uint32_t SGmin, SGmax, Group[systimerSCATTER];
+	u32_t SGmin, SGmax, Group[systimerSCATTER];
 	#endif
 	#ifndef CONFIG_FREERTOS_UNICORE
-	uint32_t Skip;
+	u32_t Skip;
 	#endif
 } systimer_t;
 DUMB_STATIC_ASSERT(sizeof(systimer_t) == 24 + sizeof(char *) + 48 + 4);
@@ -183,22 +183,22 @@ DUMB_STATIC_ASSERT(sizeof(systimer_t) == 24 + sizeof(char *) + 48 + 4);
 
 // ######################################### Public functions ######################################
 
-void vSysTimerResetCounters(uint8_t TimNum) ;
-void vSysTimerInit(uint8_t TimNum, int Type, const char * Tag, ...);
-void vSysTimerResetCountersMask(uint32_t TimerMask) ;
-uint32_t xSysTimerStart(uint8_t TimNum) ;
-uint32_t xSysTimerStop(uint8_t TimNum) ;
-uint32_t xSysTimerToggle(uint8_t TimNum);
-uint32_t xSysTimerIsRunning(uint8_t TimNum) ;
-int	xSysTimerGetStatus(uint8_t TimNum, systimer_t *) ;
-uint64_t xSysTimerGetElapsedClocks(uint8_t TimNum) ;
-uint64_t xSysTimerGetElapsedMicros(uint8_t TimNum) ;
-uint64_t xSysTimerGetElapsedMillis(uint8_t TimNum) ;
-uint64_t xSysTimerGetElapsedSecs(uint8_t TimNum) ;
-void vSysTimerShow(uint32_t TimerMask) ;
-int64_t i64TaskDelayUsec(uint32_t u32Period) ;
-uint32_t xClockDelayUsec(uint32_t uSec) ;
-uint32_t xClockDelayMsec(uint32_t mSec) ;
+void vSysTimerResetCounters(u8_t TimNum) ;
+void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...);
+void vSysTimerResetCountersMask(u32_t TimerMask) ;
+u32_t xSysTimerStart(u8_t TimNum) ;
+u32_t xSysTimerStop(u8_t TimNum) ;
+u32_t xSysTimerToggle(u8_t TimNum);
+u32_t xSysTimerIsRunning(u8_t TimNum) ;
+int	xSysTimerGetStatus(u8_t TimNum, systimer_t *) ;
+u64_t xSysTimerGetElapsedClocks(u8_t TimNum) ;
+u64_t xSysTimerGetElapsedMicros(u8_t TimNum) ;
+u64_t xSysTimerGetElapsedMillis(u8_t TimNum) ;
+u64_t xSysTimerGetElapsedSecs(u8_t TimNum) ;
+void vSysTimerShow(u32_t TimerMask) ;
+s64_t i64TaskDelayUsec(u32_t u32Period) ;
+u32_t xClockDelayUsec(u32_t uSec) ;
+u32_t xClockDelayMsec(u32_t mSec) ;
 void vSysTimingTest(void) ;
 
 #ifdef __cplusplus
