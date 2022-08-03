@@ -161,8 +161,8 @@ u32_t xSysTimerStop(u8_t TimNum) {
 	else
 		Idx = 1 + ((tElap-pST->SGmin)*(systimerSCATTER-2)) / (pST->SGmax-pST->SGmin);
 	++pST->Group[Idx];
-	IF_P(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER-1, int), "l=%u h=%u n=%u i=%d\r\n", pST->SGmin, pST->SGmax, tElap, Idx);
-	IF_myASSERT(debugRESULT, INRANGE(0, Idx, systimerSCATTER-1, int));
+	IF_P(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER-1), "l=%u h=%u n=%u i=%d\r\n", pST->SGmin, pST->SGmax, tElap, Idx);
+	IF_myASSERT(debugRESULT, INRANGE(0, Idx, systimerSCATTER-1));
 	#endif
 	return tElap;
 }
