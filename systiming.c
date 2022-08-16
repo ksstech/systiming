@@ -265,7 +265,7 @@ void vSysTimerShow(u32_t TimerMask) {
 					if (Type == stCLOCKS)
 						printfx("X-MCU-Y|");
 					#endif
-					printfx("\r\n");
+					printfx(strCRLF);
 					HdrDone = 1;
 				}
 				printfx("|%2d%c|%8s|%#7u|",
@@ -292,15 +292,15 @@ void vSysTimerShow(u32_t TimerMask) {
 							Rlo	= ((Idx - 1) * Rtmp) + pST->SGmin;
 							Rhi = Rlo + Rtmp;
 						}
-						printfx("  %d:%u~%u=%u", Idx, Rlo, Rhi, pST->Group[Idx]);
+						printfx("  %d:%#u~%#u=%#u", Idx, Rlo, Rhi, pST->Group[Idx]);
 					}
 				}
 				#endif
-				printfx("\r\n");		// end of scatter groups for specific timer
+				printfx(strCRLF);		// end of scatter groups for specific timer
 			}
 		}
 	}
-	printfx("\r\n") ;
+	printfx(strCRLF) ;
 }
 
 // ################################### RTOS + HW delay support #####################################
