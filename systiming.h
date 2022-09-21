@@ -196,7 +196,7 @@ u64_t xSysTimerGetElapsedMicros(u8_t TimNum) ;
 u64_t xSysTimerGetElapsedMillis(u8_t TimNum) ;
 u64_t xSysTimerGetElapsedSecs(u8_t TimNum) ;
 void vSysTimerShow(u32_t TimerMask) ;
-s64_t i64TaskDelayUsec(u32_t u32Period) ;
+i64_t i64TaskDelayUsec(u32_t u32Period) ;
 u32_t xClockDelayUsec(u32_t uSec) ;
 u32_t xClockDelayMsec(u32_t mSec) ;
 void vSysTimingTest(void) ;

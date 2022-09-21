@@ -308,10 +308,10 @@ void vSysTimerShow(u32_t TimerMask) {
 
 // ################################### RTOS + HW delay support #####################################
 
-s64_t	i64TaskDelayUsec(u32_t u32Period) {
-	s64_t i64Start = esp_timer_get_time() ;
-	s64_t i64Period = u32Period ;
-	s64_t i64Now ;
+i64_t	i64TaskDelayUsec(u32_t u32Period) {
+	i64_t i64Start = esp_timer_get_time() ;
+	i64_t i64Period = u32Period ;
+	i64_t i64Now ;
 	UBaseType_t CurPri = uxTaskPriorityGet(NULL) ;
 	vTaskPrioritySet(NULL, 0) ;
 	while ((i64Now = esp_timer_get_time()-i64Start) < i64Period)
