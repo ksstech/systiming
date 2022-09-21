@@ -74,7 +74,7 @@ void vSysTimerResetCountersMask(u32_t TimerMask) {
 
 void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...) {
 	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && (Type < stMAX_TYPE)) ;
-	IF_PL(debugINIT, "#=%d  T=%d '%s'\r\n", TimNum, Type, Tag) ;
+//	printf("#=%hhdu  T=%d '%s'\r\n", TimNum, Type, Tag) ;
 	systimer_t *pST	= &STdata[TimNum] ;
 	pST->Tag = Tag;
 	SetTT(TimNum, Type);
@@ -98,7 +98,7 @@ void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...) {
 	}
 	va_end(vaList);
 	#endif
-	IF_EXEC_1(debugINIT, vSysTimerShow, 0x7FFFFFFF);
+//	vSysTimerShow(0x7FFFFFFF);
 }
 
 /**
