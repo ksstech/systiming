@@ -163,7 +163,8 @@ u32_t xSysTimerStop(u8_t TimNum) {
 	else
 		Idx = 1 + ((tElap-pST->SGmin)*(systimerSCATTER-2)) / (pST->SGmax-pST->SGmin);
 	++pST->Group[Idx];
-	IF_P(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER-1), "l=%u h=%u n=%u i=%d\r\n", pST->SGmin, pST->SGmax, tElap, Idx);
+	IF_P(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER-1), "l=%lu h=%lu n=%lu i=%d\r\n",
+			pST->SGmin, pST->SGmax, tElap, Idx);
 	IF_myASSERT(debugRESULT, INRANGE(0, Idx, systimerSCATTER-1));
 	#endif
 	return tElap;
@@ -270,13 +271,13 @@ void vSysTimerShow(u32_t TimerMask) {
 					printfx(strCRLF);
 					HdrDone = 1;
 				}
-				printfx("|%2d%c|%8s|%#7u|",
+				printfx("|%2d%c|%8s|%#7lu|",
 					Num, (STstat & (1UL << Num)) ? 'R' : ' ', pST->Tag, pST->Count);
-				printfx("%#7u|%#7u|%#7u|%#7u|%#7llu|", pST->Last, pST->Min, pST->Max,
+				printfx("%#7lu|%#7lu|%#7lu|%#7lu|%#7llu|", pST->Last, pST->Min, pST->Max,
 					(u32_t) (pST->Count ? (pST->Sum / pST->Count) : pST->Sum), pST->Sum);
 				#ifndef CONFIG_FREERTOS_UNICORE
 				if (Type == stCLOCKS)
-					printfx("%#7u|", pST->Skip);
+					printfx("%#7lu|", pST->Skip);
 				#endif
 
 				#if	(systimerSCATTER > 2)
@@ -294,7 +295,7 @@ void vSysTimerShow(u32_t TimerMask) {
 							Rlo	= ((Idx - 1) * Rtmp) + pST->SGmin;
 							Rhi = Rlo + Rtmp;
 						}
-						printfx("  %d:%#u~%#u=%#u", Idx, Rlo, Rhi, pST->Group[Idx]);
+						printfx("  %d:%#lu~%#lu=%#lu", Idx, Rlo, Rhi, pST->Group[Idx]);
 					}
 				}
 				#endif
@@ -367,15 +368,15 @@ void vSysTimingTest(void) {
 	u32_t	uClock, uSecs ;
 	uClock	= xthal_get_ccount() ;
 	uSecs	= xClockDelayUsec(100) ;
-	printfx("Delay=%`u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
+	printfx("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
 
 	uClock	= xthal_get_ccount() ;
 	uSecs	= xClockDelayUsec(1000) ;
-	printfx("Delay=%`u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
+	printfx("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
 
 	uClock	= xthal_get_ccount() ;
 	uSecs	= xClockDelayUsec(10000) ;
-	printfx("Delay=%`u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
+	printfx("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
 	#endif
 	#if (systimerTEST_TICKS == 1)						// Test TICK timers & Scatter groups
 	vSysTimingTestSet(stMILLIS, "TICKS", 1) ;
