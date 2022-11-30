@@ -45,11 +45,7 @@ enum {
 //	stFOTA,
 //	stTFTP,							// TFTP task execution timing...
 //	stRTOS,
-
-// ################### OPTIONAL TASKS ####################
-#if	(halUSE_GUI > 0)
-	stGUI0, stGUI1,
-#endif
+//	stGUI0, stGUI1,
 
 // ####################### DEVICES #######################
 #if (halSOC_DIG_IN > 0)
@@ -109,11 +105,7 @@ enum {
 	stFOTA=31,
 	stTFTP=31,
 	stRTOS=31,
-
-// ################### OPTIONAL TASKS ####################
-#if	(halUSE_GUI == 0)
 	stGUI0=31, stGUI1=31,
-#endif
 
 // ####################### DEVICES #######################
 #if (halSOC_DIG_IN == 0)
