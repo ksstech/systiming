@@ -45,8 +45,9 @@ enum {
 //	stFOTA,
 //	stTFTP,							// TFTP task execution timing...
 //	stRTOS,
-//	stGUI0, stGUI1,
-
+#if (cmakeGUI > 0)
+	stGUI0, stGUI1,
+#endif
 // ####################### DEVICES #######################
 #if (halSOC_DIG_IN > 0)
 	stGPDINa, stGPDINz = (stGPDINa + halSOC_DIG_IN - 1),
@@ -105,8 +106,9 @@ enum {
 	stFOTA=31,
 	stTFTP=31,
 	stRTOS=31,
+#if (cmakeGUI == 0)
 	stGUI0=31, stGUI1=31,
-
+#endif
 // ####################### DEVICES #######################
 #if (halSOC_DIG_IN == 0)
 	stGPDINa=31, stGPDINz=31,
