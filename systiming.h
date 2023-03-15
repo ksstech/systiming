@@ -170,7 +170,17 @@ typedef struct __attribute__((packed)) {
 	u32_t Skip;
 	#endif
 } systimer_t;
-DUMB_STATIC_ASSERT(sizeof(systimer_t) == 24 + sizeof(char *) + 48 + 4);
+#if	(systimerSCATTER > 2)
+	#define stSCATTER_OVERHEAD		((systimerSCATTER + 2) * sizeof(u32_t))
+#else
+	#define stSCATTER_OVERHEAD		0
+#endif
+#ifndef CONFIG_FREERTOS_UNICORE
+	#define stDUALCORE_OVERHEAD		sizeof(u32_t)
+#else
+	#define stDUALCORE_OVERHEAD		0
+#endif
+DUMB_STATIC_ASSERT(sizeof(systimer_t) == 24 + sizeof(char *) + stSCATTER_OVERHEAD + stDUALCORE_OVERHEAD);
 
 // ######################################### Public variables ######################################
 
