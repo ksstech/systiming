@@ -9,6 +9,7 @@
 #include "printfx.h"				// +x_definitions +stdarg +stdint +stdio
 #include "FreeRTOS_Support.h"
 
+#include <xtensa/hal.h>
 #include "esp_timer.h"
 
 #define	debugFLAG					0xE000
