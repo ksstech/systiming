@@ -50,7 +50,7 @@ enum {
 #endif
 // ####################### DEVICES #######################
 #if (halSOC_DIG_IN > 0)
-	stGPDINa, stGPDINz = (stGPDINa + halSOC_DIG_IN - 1),
+	stGDIa, stGDIz = (stGDIa + halSOC_DIG_IN - 1),
 #endif
 #if	(halHAS_PCA9555 > 0)
 	stPCA9555,
@@ -111,7 +111,7 @@ enum {
 #endif
 // ####################### DEVICES #######################
 #if (halSOC_DIG_IN == 0)
-	stGPDINa=31, stGPDINz=31,
+	stGDIa=31, stGDIz=31,
 #endif
 #if	(halHAS_PCA9555 == 0)
 	stPCA9555=31,
