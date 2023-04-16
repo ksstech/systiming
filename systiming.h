@@ -58,6 +58,9 @@ enum {
 #if (halHAS_ONEWIRE > 0)
 	stOW1, stOW2,
 #endif
+#if	(halHAS_DS1307 > 0)
+	stDS1307,
+#endif
 #if	(halHAS_DS248X > 0)
 	stDS248xIO, stDS248x1R, stDS248xWR, stDS248xRD, stDS248xST,
 #endif
@@ -84,6 +87,9 @@ enum {
 #endif
 #if	(halHAS_PYCOPROC > 0)
 	stPYCOPROC,
+#endif
+#if	(halHAS_PCF8574 > 0)
+	stPCF8574,
 #endif
 #if	(halHAS_SI70XX > 0)
 	stSI70XX,
@@ -119,6 +125,9 @@ enum {
 #if	(halHAS_ONEWIRE == 0)
 	stOW1=31, stOW2=31,
 #endif
+#if	(halHAS_DS1307 == 0)
+	stDS1307=31,
+#endif
 #if	(halHAS_DS248X == 0)
 	stDS248xIO=31, stDS248x1R=31, stDS248xWR=31, stDS248xRD=31, stDS248xST=31,
 #endif
@@ -145,6 +154,9 @@ enum {
 #endif
 #if	(halHAS_PYCOPROC == 0)
 	stPYCOPROC=31,
+#endif
+#if	(halHAS_PCF8574 == 0)
+	stPCF8574=31,
 #endif
 #if	(halHAS_SI70XX == 0)
 	stSI70XX=31,
