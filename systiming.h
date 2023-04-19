@@ -33,7 +33,7 @@ extern "C" {
 
 // ################################# Process timer support #########################################
 
-enum { stMILLIS, stMICROS, stCLOCKS, stMAX_TYPE } ;
+enum { stMILLIS, stMICROS, stCLOCKS, stMAX_TYPE };
 
 enum {
 // ################# SYSTEM TASKS ########################
@@ -199,23 +199,23 @@ DUMB_STATIC_ASSERT(sizeof(systimer_t) == 24 + sizeof(char *) + stSCATTER_OVERHEA
 
 // ######################################### Public functions ######################################
 
-void vSysTimerResetCounters(u8_t TimNum) ;
+void vSysTimerResetCounters(u8_t TimNum);
 void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...);
-void vSysTimerResetCountersMask(u32_t TimerMask) ;
-u32_t xSysTimerStart(u8_t TimNum) ;
-u32_t xSysTimerStop(u8_t TimNum) ;
+void vSysTimerResetCountersMask(u32_t TimerMask);
+u32_t xSysTimerStart(u8_t TimNum);
+u32_t xSysTimerStop(u8_t TimNum);
 u32_t xSysTimerToggle(u8_t TimNum);
-u32_t xSysTimerIsRunning(u8_t TimNum) ;
-int	xSysTimerGetStatus(u8_t TimNum, systimer_t *) ;
-u64_t xSysTimerGetElapsedClocks(u8_t TimNum) ;
-u64_t xSysTimerGetElapsedMicros(u8_t TimNum) ;
-u64_t xSysTimerGetElapsedMillis(u8_t TimNum) ;
-u64_t xSysTimerGetElapsedSecs(u8_t TimNum) ;
-void vSysTimerShow(u32_t TimerMask) ;
-i64_t i64TaskDelayUsec(u32_t u32Period) ;
-u32_t xClockDelayUsec(u32_t uSec) ;
-u32_t xClockDelayMsec(u32_t mSec) ;
-void vSysTimingTest(void) ;
+u32_t xSysTimerIsRunning(u8_t TimNum);
+int	xSysTimerGetStatus(u8_t TimNum, systimer_t *);
+u64_t xSysTimerGetElapsedClocks(u8_t TimNum);
+u64_t xSysTimerGetElapsedMicros(u8_t TimNum);
+u64_t xSysTimerGetElapsedMillis(u8_t TimNum);
+u64_t xSysTimerGetElapsedSecs(u8_t TimNum);
+void vSysTimerShow(u32_t TimerMask);
+i64_t i64TaskDelayUsec(u32_t u32Period);
+u32_t xClockDelayUsec(u32_t uSec);
+u32_t xClockDelayMsec(u32_t mSec);
+void vSysTimingTest(void);
 
 #ifdef __cplusplus
 }
