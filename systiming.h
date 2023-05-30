@@ -49,6 +49,9 @@ enum {
 	stGUI0, stGUI1,
 #endif
 // ####################### DEVICES #######################
+#if	(halHAS_ADE7953 > 0)
+	stADE7953R, stADE7953W,
+#endif
 #if (halSOC_DIG_IN > 0)
 	stGDIa, stGDIz = (stGDIa + halSOC_DIG_IN - 1),
 #endif
@@ -116,6 +119,9 @@ enum {
 	stGUI0=31, stGUI1=31,
 #endif
 // ####################### DEVICES #######################
+#if	(halHAS_ADE7953 == 0)
+	stADE7953R=31,stADE7953W=31,
+#endif
 #if (halSOC_DIG_IN == 0)
 	stGDIa=31, stGDIz=31,
 #endif
