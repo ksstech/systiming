@@ -12,7 +12,7 @@
 #include <xtensa/hal.h>
 #include "esp_timer.h"
 
-#define	debugFLAG					0xE000
+#define	debugFLAG					0xF000
 #define	debugINIT					(debugFLAG & 0x0001)
 
 #define	debugTIMING					(debugFLAG_GLOBAL & debugFLAG & 0x1000)
@@ -318,7 +318,7 @@ i64_t	i64TaskDelayUsec(u32_t u32Period) {
 	while ((i64Now = esp_timer_get_time()-i64Start) < i64Period)
 		taskYIELD();
 	vTaskPrioritySet(NULL, CurPri) ;
-	IF_P(debugTIMING, "D=%lli   ", i64Now - i64Period) ;
+//	P("D=%lli   ", i64Now - i64Period) ;
 	return i64Now ;
 }
 
