@@ -30,7 +30,7 @@
 
 // #################################### Local static variables #####################################
 
-static systimer_t	STdata[stMAX_NUM] = { 0 } ;
+static systimer_t	STdata[stMAX_NUM] = { 0 };
 static u32_t STstat = 0;								// 1 = Running
 static u64_t STtype = 0;
 
@@ -46,15 +46,15 @@ static u64_t STtype = 0;
  */
 void vSysTimerResetCounters(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
-	systimer_t *pST	= &STdata[TimNum] ;
-	STstat		&= ~(1UL << TimNum) ;					// clear active status ie STOP
-	pST->Sum	= 0ULL ;
-	pST->Last	= 0 ;
-	pST->Count	= 0 ;
-	pST->Max	= 0 ;
-	pST->Min	= 0xFFFFFFFF ;
+	systimer_t *pST	= &STdata[TimNum];
+	STstat		&= ~(1UL << TimNum);					// clear active status ie STOP
+	pST->Sum	= 0ULL;
+	pST->Last	= 0;
+	pST->Count	= 0;
+	pST->Max	= 0;
+	pST->Min	= 0xFFFFFFFF;
 	#if	(systimerSCATTER > 2)
-	memset(&pST->Group, 0, SO_MEM(systimer_t, Group)) ;
+	memset(&pST->Group, 0, SO_MEM(systimer_t, Group));
 	#endif
 }
 
@@ -65,18 +65,18 @@ void vSysTimerResetCounters(u8_t TimNum) {
  * @param	TimerMask
  */
 void vSysTimerResetCountersMask(u32_t TimerMask) {
-	u32_t mask = 0x00000001 ;
-	systimer_t *pST	= STdata ;
+	u32_t mask = 0x00000001;
+	systimer_t *pST	= STdata;
 	for (u8_t TimNum = 0; TimNum < stMAX_NUM; ++TimNum, ++pST) {
-		if (TimerMask & mask) vSysTimerResetCounters(TimNum) ;
-		mask <<= 1 ;
+		if (TimerMask & mask) vSysTimerResetCounters(TimNum);
+		mask <<= 1;
 	}
 }
 
 void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...) {
-	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && (Type < stMAX_TYPE)) ;
-//	printf("#=%hhdu  T=%d '%s'\r\n", TimNum, Type, Tag) ;
-	systimer_t *pST	= &STdata[TimNum] ;
+	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && (Type < stMAX_TYPE));
+//	printf("#=%hhdu  T=%d '%s'\r\n", TimNum, Type, Tag);
+	systimer_t *pST	= &STdata[TimNum];
 	pST->Tag = Tag;
 	SetTT(TimNum, Type);
 	vSysTimerResetCounters(TimNum);
@@ -108,9 +108,9 @@ void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...) {
  * @return		current timer value based on type (CLOCKs or TICKs)
  */
 u32_t xSysTimerStart(u8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM) ;
-	int Type = GetTT(TimNum) ;
-	IF_myASSERT(debugPARAM, Type < stMAX_TYPE) ;
+	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
+	int Type = GetTT(TimNum);
+	IF_myASSERT(debugPARAM, Type < stMAX_TYPE);
 	#ifndef CONFIG_FREERTOS_UNICORE
 	if (Type == stCLOCKS) {
 		if (xPortGetCoreID())
@@ -120,7 +120,7 @@ u32_t xSysTimerStart(u8_t TimNum) {
 	}
 	#endif
 	STstat	|= (1UL << TimNum);							// Mark as started & running
-	STdata[TimNum].Count++ ;
+	++STdata[TimNum].Count;
 	return STdata[TimNum].Last = GetTimer(Type);
 }
 
@@ -130,21 +130,21 @@ u32_t xSysTimerStart(u8_t TimNum) {
  * @return	Last measured interval based on type (CLOCKs or TICKs)
  */
 u32_t xSysTimerStop(u8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM) ;
-	int Type = GetTT(TimNum) ;
-	IF_myASSERT(debugPARAM, Type < stMAX_TYPE) ;
+	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
+	int Type = GetTT(TimNum);
+	IF_myASSERT(debugPARAM, Type < stMAX_TYPE);
 	u32_t tNow	= GetTimer(Type);
-	STstat &= ~(1UL << TimNum) ;
-	systimer_t *pST	= &STdata[TimNum] ;
+	STstat &= ~(1UL << TimNum);
+	systimer_t *pST	= &STdata[TimNum];
 
 	#ifndef CONFIG_FREERTOS_UNICORE
 	/* Adjustments made to CCOUNT cause discrepancies between readings from different cores.
 	 * In order to filter out invalid/OOR values we verify whether the timer is being stopped
 	 * on the same MCU as it was started. If not, we ignore the timing values */
-	u8_t	xCoreID	= (STcore & (1UL << TimNum)) ? 1 : 0 ;
+	u8_t	xCoreID	= (STcore & (1UL << TimNum)) ? 1 : 0;
 	if ((Type == stCLOCKS) && xCoreID != xPortGetCoreID()) {
-		++pST->Skip ;
-		return 0 ;
+		++pST->Skip;
+		return 0;
 	}
 	#endif
 	u32_t tElap = tNow - pST->Last;
@@ -172,7 +172,7 @@ u32_t xSysTimerStop(u8_t TimNum) {
 }
 
 u32_t xSysTimerToggle(u8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM) ;
+	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
 	return (STstat & (1 << TimNum)) ? xSysTimerStop(TimNum) : xSysTimerStart(TimNum);
 }
 
@@ -183,18 +183,18 @@ u32_t xSysTimerToggle(u8_t TimNum) {
  * 			current elapsed timer value based on type (CLOCKs or TICKSs)
  */
 u32_t xSysTimerIsRunning(u8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM) ;
-	u32_t tNow = 0 ;
+	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
+	u32_t tNow = 0;
 	if (STstat & (1 << TimNum)) {
-		int Type = GetTT(TimNum) ;
-		IF_myASSERT(debugPARAM, Type < stMAX_TYPE) ;
+		int Type = GetTT(TimNum);
+		IF_myASSERT(debugPARAM, Type < stMAX_TYPE);
 		tNow	= GetTimer(Type);
-		systimer_t * pST = &STdata[TimNum] ;
+		systimer_t * pST = &STdata[TimNum];
 		if (Type == stCLOCKS) {
 			if (tNow > pST->Last)
 				tNow -= pST->Last;						// Unlikely wrapped
 			else
-				tNow += (0xFFFFFFFF - pST->Last) ;		// definitely wrapped
+				tNow += (0xFFFFFFFF - pST->Last);		// definitely wrapped
 		} else {
 			tNow -= pST->Last;
 		}
@@ -209,38 +209,37 @@ u32_t xSysTimerIsRunning(u8_t TimNum) {
  * @return	Type
  */
 int	xSysTimerGetStatus(u8_t TimNum, systimer_t * pST) {
-	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM && halCONFIG_inSRAM(pST)) ;
-	memcpy(pST, &STdata[TimNum], sizeof(systimer_t)) ;
-	return GetTT(TimNum) ;
+	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM && halCONFIG_inSRAM(pST));
+	memcpy(pST, &STdata[TimNum], sizeof(systimer_t));
+	return GetTT(TimNum);
 }
 
 u64_t xSysTimerGetElapsedClocks(u8_t TimNum) {
-	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && GetTT(TimNum) > stMICROS) ;
-	return STdata[TimNum].Sum ;
+	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && GetTT(TimNum) > stMICROS);
+	return STdata[TimNum].Sum;
 }
 
 u64_t xSysTimerGetElapsedMicros(u8_t TimNum) {
-	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && GetTT(TimNum) > stMILLIS) ;
-	return (GetTT(TimNum) == stMICROS) ? STdata[TimNum].Sum
-			: CLOCKS2US(STdata[TimNum].Sum, u64_t) ;
+	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && GetTT(TimNum) > stMILLIS);
+	return (GetTT(TimNum) == stMICROS) ? STdata[TimNum].Sum : CLOCKS2US(STdata[TimNum].Sum, u64_t);
 }
 
 u64_t xSysTimerGetElapsedMillis(u8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM) ;
-	int Type = GetTT(TimNum) ;
-	IF_myASSERT(debugPARAM, Type < stMAX_TYPE) ;
+	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
+	int Type = GetTT(TimNum);
+	IF_myASSERT(debugPARAM, Type < stMAX_TYPE);
 	return (Type == stMILLIS) ? TICK2MS(STdata[TimNum].Sum, u64_t)
 		 : (Type == stMICROS) ? MICRO2MS(STdata[TimNum].Sum, u64_t)
-		 : CLOCK2MS(STdata[TimNum].Sum, u64_t) ;
+		 : CLOCK2MS(STdata[TimNum].Sum, u64_t);
 }
 
 u64_t xSysTimerGetElapsedSecs(u8_t TimNum) {
-	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM) ;
-	int Type = GetTT(TimNum) ;
-	IF_myASSERT(debugPARAM  , Type < stMAX_TYPE) ;
+	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
+	int Type = GetTT(TimNum);
+	IF_myASSERT(debugPARAM, Type < stMAX_TYPE);
 	return (Type == stMILLIS) ? TICK2SEC(STdata[TimNum].Sum, u64_t)
 		 : (Type == stMICROS) ? MICRO2SEC(STdata[TimNum].Sum, u64_t)
-		 : CLOCK2SEC(STdata[TimNum].Sum, u64_t) ;
+		 : CLOCK2SEC(STdata[TimNum].Sum, u64_t);
 }
 
 #define	stHDR_TICKS		" mS|Min mS |Max mS |Avg mS |Sum mS |"
@@ -255,10 +254,10 @@ u64_t xSysTimerGetElapsedSecs(u8_t TimNum) {
  */
 void vSysTimerShow(u32_t TimerMask) {
 	for (int Type = 0; Type < stMAX_TYPE; ++Type) {
-		u32_t Mask = 0x00000001 ;
-		int HdrDone = 0 ;
+		u32_t Mask = 0x00000001;
+		int HdrDone = 0;
 		for (int Num = 0; Num < stMAX_NUM; Mask <<= 1, ++Num) {
-			systimer_t * pST = &STdata[Num] ;
+			systimer_t * pST = &STdata[Num];
 			if ((TimerMask & Mask) && (Type == GetTT(Num)) && pST->Count) {
 				if (HdrDone == 0) {
 					printfx("%C| # |  Name  | Count |Last%s%C", colourFG_CYAN,
@@ -282,15 +281,15 @@ void vSysTimerShow(u32_t TimerMask) {
 				#endif
 
 				#if	(systimerSCATTER > 2)
-				u32_t Rlo, Rhi ;
+				u32_t Rlo, Rhi;
 				for (int Idx = 0; Idx < systimerSCATTER; ++Idx) {
 					if (pST->Group[Idx]) {
 						if (Idx == 0) {
-							Rlo = 0 ;
-							Rhi = pST->SGmin ;
+							Rlo = 0;
+							Rhi = pST->SGmin;
 						} else if (Idx == (systimerSCATTER-1)) {
-							Rlo = pST->SGmax ;
-							Rhi = 0xFFFFFFFF ;
+							Rlo = pST->SGmax;
+							Rhi = 0xFFFFFFFF;
 						} else {
 							u32_t Rtmp = (pST->SGmax - pST->SGmin) / (systimerSCATTER-2);
 							Rlo	= ((Idx - 1) * Rtmp) + pST->SGmin;
@@ -304,22 +303,22 @@ void vSysTimerShow(u32_t TimerMask) {
 			}
 		}
 	}
-	printfx(strCRLF) ;
+	printfx(strCRLF);
 }
 
 // ################################### RTOS + HW delay support #####################################
 
 i64_t	i64TaskDelayUsec(u32_t u32Period) {
-	i64_t i64Start = esp_timer_get_time() ;
-	i64_t i64Period = u32Period ;
-	i64_t i64Now ;
-	UBaseType_t CurPri = uxTaskPriorityGet(NULL) ;
-	vTaskPrioritySet(NULL, 0) ;
+	i64_t i64Start = esp_timer_get_time();
+	i64_t i64Period = u32Period;
+	i64_t i64Now;
+	UBaseType_t CurPri = uxTaskPriorityGet(NULL);
+	vTaskPrioritySet(NULL, 0);
 	while ((i64Now = esp_timer_get_time()-i64Start) < i64Period)
 		taskYIELD();
-	vTaskPrioritySet(NULL, CurPri) ;
-//	P("D=%lli   ", i64Now - i64Period) ;
-	return i64Now ;
+	vTaskPrioritySet(NULL, CurPri);
+//	P("D=%lli   ", i64Now - i64Period);
+	return i64Now;
 }
 
 // ################################## MCU Clock cycle delay support ################################
@@ -330,10 +329,10 @@ i64_t	i64TaskDelayUsec(u32_t u32Period) {
  * @return	Clock counter at the end
  */
 u32_t xClockDelayUsec(u32_t uSec) {
-	IF_myASSERT(debugPARAM, uSec < (UINT32_MAX / configCLOCKS_PER_USEC)) ;
-	u32_t ClockEnd	= GET_CLOCK_COUNTER() + halUS_TO_CLOCKS(uSec) ;
-	while ((ClockEnd - GET_CLOCK_COUNTER()) > configCLOCKS_PER_USEC ) ;
-	return ClockEnd ;
+	IF_myASSERT(debugPARAM, uSec < (UINT32_MAX / configCLOCKS_PER_USEC));
+	u32_t ClockEnd	= GET_CLOCK_COUNTER() + halUS_TO_CLOCKS(uSec);
+	while ((ClockEnd - GET_CLOCK_COUNTER()) > configCLOCKS_PER_USEC );
+	return ClockEnd;
 }
 
 /**
@@ -342,8 +341,8 @@ u32_t xClockDelayUsec(u32_t uSec) {
  * #return	Clock counter at the end
  */
 u32_t xClockDelayMsec(u32_t mSec) {
-	IF_myASSERT(debugPARAM, mSec < (UINT32_MAX / configCLOCKS_PER_MSEC)) ;
-	return xClockDelayUsec(mSec * MICROS_IN_MILLISEC) ;
+	IF_myASSERT(debugPARAM, mSec < (UINT32_MAX / configCLOCKS_PER_MSEC));
+	return xClockDelayUsec(mSec * MICROS_IN_MILLISEC);
 }
 
 // ##################################### functional tests ##########################################
@@ -354,41 +353,41 @@ u32_t xClockDelayMsec(u32_t mSec) {
 
 void vSysTimingTestSet(u32_t Type, char * Tag, u32_t Delay) {
 	for (u8_t Idx = 0; Idx < stMAX_NUM; ++Idx) {
-		vSysTimerInit(Idx, Type, Tag, myMS_TO_TICKS(Delay), myMS_TO_TICKS(Delay * systimerSCATTER)) ;
+		vSysTimerInit(Idx, Type, Tag, myMS_TO_TICKS(Delay), myMS_TO_TICKS(Delay * systimerSCATTER));
 	}
 	for (u32_t Steps = 0; Steps <= systimerSCATTER; ++Steps) {
-		for (u32_t Count = 0; Count < stMAX_NUM; xSysTimerStart(Count++)) ;
-		vTaskDelay(pdMS_TO_TICKS((Delay * Steps) + 1)) ;
-		for (u32_t Count = 0; Count < stMAX_NUM; xSysTimerStop(Count++)) ;
+		for (u32_t Count = 0; Count < stMAX_NUM; xSysTimerStart(Count++));
+		vTaskDelay(pdMS_TO_TICKS((Delay * Steps) + 1));
+		for (u32_t Count = 0; Count < stMAX_NUM; xSysTimerStop(Count++));
 	}
-	vSysTimerShow(0xFFFFFFFF) ;
+	vSysTimerShow(0xFFFFFFFF);
 }
 
 void vSysTimingTest(void) {
 	#if	(systimerTEST_DELAY == 1)						// Test the uSec delays
-	u32_t	uClock, uSecs ;
-	uClock	= xthal_get_ccount() ;
-	uSecs	= xClockDelayUsec(100) ;
-	printfx("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
+	u32_t	uClock, uSecs;
+	uClock	= xthal_get_ccount();
+	uSecs	= xClockDelayUsec(100);
+	printfx("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
 
-	uClock	= xthal_get_ccount() ;
-	uSecs	= xClockDelayUsec(1000) ;
-	printfx("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
+	uClock	= xthal_get_ccount();
+	uSecs	= xClockDelayUsec(1000);
+	printfx("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
 
-	uClock	= xthal_get_ccount() ;
-	uSecs	= xClockDelayUsec(10000) ;
-	printfx("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC) ;
+	uClock	= xthal_get_ccount();
+	uSecs	= xClockDelayUsec(10000);
+	printfx("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
 	#endif
 	#if (systimerTEST_TICKS == 1)						// Test TICK timers & Scatter groups
-	vSysTimingTestSet(stMILLIS, "TICKS", 1) ;
-	vSysTimingTestSet(stMILLIS, "TICKS", 10) ;
-	vSysTimingTestSet(stMILLIS, "TICKS", 100) ;
-	vSysTimingTestSet(stMILLIS, "TICKS", 1000) ;
+	vSysTimingTestSet(stMILLIS, "TICKS", 1);
+	vSysTimingTestSet(stMILLIS, "TICKS", 10);
+	vSysTimingTestSet(stMILLIS, "TICKS", 100);
+	vSysTimingTestSet(stMILLIS, "TICKS", 1000);
 	#endif
 	#if (stTEST_CLOCKS == 1)						// Test CLOCK timers & Scatter groups
-	vSysTimingTestSet(stCLOCKS, "CLOCKS", 1) ;
-	vSysTimingTestSet(stCLOCKS, "CLOCKS", 10) ;
-	vSysTimingTestSet(stCLOCKS, "CLOCKS", 100) ;
-	vSysTimingTestSet(stCLOCKS, "CLOCKS", 1000) ;
+	vSysTimingTestSet(stCLOCKS, "CLOCKS", 1);
+	vSysTimingTestSet(stCLOCKS, "CLOCKS", 10);
+	vSysTimingTestSet(stCLOCKS, "CLOCKS", 100);
+	vSysTimingTestSet(stCLOCKS, "CLOCKS", 1000);
 	#endif
 }
