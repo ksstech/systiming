@@ -75,7 +75,6 @@ void vSysTimerResetCountersMask(u32_t TimerMask) {
 
 void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...) {
 	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && (Type < stMAX_TYPE));
-//	printf("#=%hhdu  T=%d '%s'\r\n", TimNum, Type, Tag);
 	systimer_t *pST	= &STdata[TimNum];
 	pST->Tag = Tag;
 	SetTT(TimNum, Type);
@@ -99,7 +98,6 @@ void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...) {
 	}
 	va_end(vaList);
 	#endif
-//	vSysTimerShow(0x7FFFFFFF);
 }
 
 /**
@@ -113,13 +111,11 @@ u32_t xSysTimerStart(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, Type < stMAX_TYPE);
 	#ifndef CONFIG_FREERTOS_UNICORE
 	if (Type == stCLOCKS) {
-		if (xPortGetCoreID())
-			STcore |= (1UL << TimNum);					// Running on Core 1
-		else
-			STcore &= ~(1UL << TimNum);					// Running on Core 0
+		if (xPortGetCoreID()) STcore |= (1UL << TimNum);// Running on Core 1
+		else STcore &= ~(1UL << TimNum);				// Running on Core 0
 	}
 	#endif
-	STstat	|= (1UL << TimNum);							// Mark as started & running
+	STstat |= (1UL << TimNum);							// Mark as started & running
 	++STdata[TimNum].Count;
 	return STdata[TimNum].Last = GetTimer(Type);
 }
@@ -151,18 +147,13 @@ u32_t xSysTimerStop(u8_t TimNum) {
 	pST->Sum += tElap;
 	pST->Last = tElap;
 	// update Min & Max if required
-	if (pST->Min > tElap)
-		pST->Min = tElap;
-	if (pST->Max < tElap)
-		pST->Max = tElap;
+	if (pST->Min > tElap) pST->Min = tElap;
+	if (pST->Max < tElap) pST->Max = tElap;
 	#if	(systimerSCATTER > 2)
 	int Idx;
-	if (tElap <= pST->SGmin)
-		Idx = 0;
-	else if (tElap >= pST->SGmax)
-		Idx = systimerSCATTER-1;
-	else
-		Idx = 1 + ((tElap-pST->SGmin)*(systimerSCATTER-2)) / (pST->SGmax-pST->SGmin);
+	if (tElap <= pST->SGmin) Idx = 0;
+	else if (tElap >= pST->SGmax) Idx = systimerSCATTER-1;
+	else Idx = 1 + ((tElap-pST->SGmin)*(systimerSCATTER-2)) / (pST->SGmax-pST->SGmin);
 	++pST->Group[Idx];
 	IF_P(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER-1), "l=%lu h=%lu n=%lu i=%d\r\n",
 			pST->SGmin, pST->SGmax, tElap, Idx);
@@ -191,10 +182,8 @@ u32_t xSysTimerIsRunning(u8_t TimNum) {
 		tNow	= GetTimer(Type);
 		systimer_t * pST = &STdata[TimNum];
 		if (Type == stCLOCKS) {
-			if (tNow > pST->Last)
-				tNow -= pST->Last;						// Unlikely wrapped
-			else
-				tNow += (0xFFFFFFFF - pST->Last);		// definitely wrapped
+			if (tNow > pST->Last) tNow -= pST->Last;	// Unlikely wrapped
+			else tNow += (0xFFFFFFFF - pST->Last);		// definitely wrapped
 		} else {
 			tNow -= pST->Last;
 		}
@@ -314,10 +303,8 @@ i64_t	i64TaskDelayUsec(u32_t u32Period) {
 	i64_t i64Now;
 	UBaseType_t CurPri = uxTaskPriorityGet(NULL);
 	vTaskPrioritySet(NULL, 0);
-	while ((i64Now = esp_timer_get_time()-i64Start) < i64Period)
-		taskYIELD();
+	while ((i64Now = esp_timer_get_time()-i64Start) < i64Period) taskYIELD();
 	vTaskPrioritySet(NULL, CurPri);
-//	P("D=%lli   ", i64Now - i64Period);
 	return i64Now;
 }
 
