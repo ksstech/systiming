@@ -28,8 +28,8 @@ extern "C" {
 #define	IF_SYSTIMER_TOGGLE(T,n)					if (T && ((n) < 31)) xSysTimerToggle(n)
 #define	IF_SYSTIMER_RESET(T,n)					if (T && ((n) < 31)) xSysTimerReset(n)
 
-#define	IF_SYSTIMER_SHOW(T,n)					if (T && ((n) < 31)) vSysTimerShow(n)
-#define	IF_SYSTIMER_SHOW_NUM(T,n)				if (T && ((n) < 31)) vSysTimerShow(1 << (n))
+#define	IF_SYSTIMER_SHOW(T,n)					if (T && ((n) < 31)) vSysTimerShow(NULL, n)
+#define	IF_SYSTIMER_SHOW_NUM(T,n)				if (T && ((n) < 31)) vSysTimerShow(NULL, 1 << (n))
 
 // ################################# Process timer support #########################################
 
@@ -217,7 +217,8 @@ u64_t xSysTimerGetElapsedClocks(u8_t TimNum);
 u64_t xSysTimerGetElapsedMicros(u8_t TimNum);
 u64_t xSysTimerGetElapsedMillis(u8_t TimNum);
 u64_t xSysTimerGetElapsedSecs(u8_t TimNum);
-void vSysTimerShow(u32_t TimerMask);
+struct report_t;
+void vSysTimerShow(struct report_t * psR, u32_t TimerMask);
 i64_t i64TaskDelayUsec(u32_t u32Period);
 u32_t xClockDelayUsec(u32_t uSec);
 u32_t xClockDelayMsec(u32_t mSec);

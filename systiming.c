@@ -241,7 +241,9 @@ u64_t xSysTimerGetElapsedSecs(u8_t TimNum) {
  * @param	tMask 8bit bitmapped flag to select timer(s) to display
  * @return	none
  */
-void vSysTimerShow(u32_t TimerMask) {
+void vSysTimerShow(report_t * psR, u32_t TimerMask) {
+	const char * pcTag;
+	char caTmp[12];
 	for (int Type = 0; Type < stMAX_TYPE; ++Type) {
 		u32_t Mask = 0x00000001;
 		int HdrDone = 0;
@@ -249,24 +251,22 @@ void vSysTimerShow(u32_t TimerMask) {
 			systimer_t * pST = &STdata[Num];
 			if ((TimerMask & Mask) && (Type == GetTT(Num)) && pST->Count) {
 				if (HdrDone == 0) {
-					printfx("%C| # |  Name  | Count |Last%s%C", colourFG_CYAN,
+					wprintfx(psR, "%C| # |  Name  | Count |Last%s%C", colourFG_CYAN,
 						(Type == stMILLIS) ? stHDR_TICKS :
 						(Type == stMICROS) ? stHDR_MICROS : stHDR_CLOCKS,
 						attrRESET);
 					#ifndef CONFIG_FREERTOS_UNICORE
-					if (Type == stCLOCKS)
-						printfx("X-MCU-Y|");
+					if (Type == stCLOCKS) wprintfx(psR, "X-MCU-Y|");
 					#endif
-					printfx(strCRLF);
+					wprintfx(psR, strCRLF);
 					HdrDone = 1;
 				}
 				printfx("|%2d%c|%8s|%#7lu|",
 					Num, (STstat & (1UL << Num)) ? 'R' : ' ', pST->Tag, pST->Count);
-				printfx("%#7lu|%#7lu|%#7lu|%#7lu|%#7llu|", pST->Last, pST->Min, pST->Max,
+				wprintfx(psR, "%#7lu|%#7lu|%#7lu|%#7lu|%#7llu|", pST->Last, pST->Min, pST->Max,
 					(u32_t) (pST->Count ? (pST->Sum / pST->Count) : pST->Sum), pST->Sum);
 				#ifndef CONFIG_FREERTOS_UNICORE
-				if (Type == stCLOCKS)
-					printfx("%#7lu|", pST->Skip);
+				if (Type == stCLOCKS) wprintfx(psR, "%#7lu|", pST->Skip);
 				#endif
 
 				#if	(systimerSCATTER > 2)
@@ -284,15 +284,15 @@ void vSysTimerShow(u32_t TimerMask) {
 							Rlo	= ((Idx - 1) * Rtmp) + pST->SGmin;
 							Rhi = Rlo + Rtmp;
 						}
-						printfx("  %d:%#lu~%#lu=%#lu", Idx, Rlo, Rhi, pST->Group[Idx]);
+						wprintfx(psR, "  %d:%#lu~%#lu=%#lu", Idx, Rlo, Rhi, pST->Group[Idx]);
 					}
 				}
 				#endif
-				printfx(strCRLF);		// end of scatter groups for specific timer
+				wprintfx(psR, strCRLF);		// end of scatter groups for specific timer
 			}
 		}
 	}
-	printfx(strCRLF);
+	wprintfx(psR, strCRLF);
 }
 
 // ################################### RTOS + HW delay support #####################################
@@ -347,7 +347,7 @@ void vSysTimingTestSet(u32_t Type, char * Tag, u32_t Delay) {
 		vTaskDelay(pdMS_TO_TICKS((Delay * Steps) + 1));
 		for (u32_t Count = 0; Count < stMAX_NUM; xSysTimerStop(Count++));
 	}
-	vSysTimerShow(0xFFFFFFFF);
+	vSysTimerShow(NULL, 0xFFFFFFFF);
 }
 
 void vSysTimingTest(void) {
@@ -355,15 +355,15 @@ void vSysTimingTest(void) {
 	u32_t	uClock, uSecs;
 	uClock	= xthal_get_ccount();
 	uSecs	= xClockDelayUsec(100);
-	printfx("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
+	wprintfx(NULL, "Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
 
 	uClock	= xthal_get_ccount();
 	uSecs	= xClockDelayUsec(1000);
-	printfx("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
+	wprintfx(NULL, "Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
 
 	uClock	= xthal_get_ccount();
 	uSecs	= xClockDelayUsec(10000);
-	printfx("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
+	wprintfx(NULL, "Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
 	#endif
 	#if (systimerTEST_TICKS == 1)						// Test TICK timers & Scatter groups
 	vSysTimingTestSet(stMILLIS, "TICKS", 1);
