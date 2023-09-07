@@ -261,8 +261,12 @@ void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 					wprintfx(psR, strCRLF);
 					HdrDone = 1;
 				}
-				printfx("|%2d%c|%8s|%#7lu|",
-					Num, (STstat & (1UL << Num)) ? 'R' : ' ', pST->Tag, pST->Count);
+				if (halCONFIG_inMEM(pST->Tag)) pcTag = pST->Tag;
+				else {
+					snprintfx(caTmp, sizeof(caTmp), "%8d", pST->Tag);
+					pcTag = caTmp;
+				}
+				wprintfx(psR, "|%2d%c|%8s|%#7lu|", Num, (STstat & (1UL << Num)) ? 'R' : ' ', pcTag, pST->Count);
 				wprintfx(psR, "%#7lu|%#7lu|%#7lu|%#7lu|%#7llu|", pST->Last, pST->Min, pST->Max,
 					(u32_t) (pST->Count ? (pST->Sum / pST->Count) : pST->Sum), pST->Sum);
 				#ifndef CONFIG_FREERTOS_UNICORE
