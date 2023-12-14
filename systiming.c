@@ -1,11 +1,11 @@
 /*
- * systiming.c
- * Copyright 2014-20 Andre M Maree / KSS Technologies (Pty) Ltd.
+ * systiming.c - Copyright (c) 2014-23 Andre M. Maree / KSS Technologies (Pty) Ltd.
  */
 
 #include <string.h>
 
 #include "systiming.h"
+#include "struct_union.h"
 #include "printfx.h"				// +x_definitions +stdarg +stdint +stdio
 #include "FreeRTOS_Support.h"
 
