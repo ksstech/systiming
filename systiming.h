@@ -5,6 +5,7 @@
 #pragma once
 
 #include "hal_config.h"
+#include "definitions.h"
 
 #ifdef __cplusplus
 extern "C" {
