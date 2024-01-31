@@ -261,16 +261,17 @@ void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 					wprintfx(psR, strCRLF);
 					HdrDone = 1;
 				}
-				if (halCONFIG_inMEM(pST->Tag)) pcTag = pST->Tag;
-				else {
+				if (halCONFIG_inMEM(pST->Tag)) {
+					pcTag = pST->Tag;
+				} else {
 					snprintfx(caTmp, sizeof(caTmp), "%8d", pST->Tag);
 					pcTag = caTmp;
 				}
-				wprintfx(psR, "|%2d%c|%8s|%#7lu|", Num, (STstat & (1UL << Num)) ? 'R' : ' ', pcTag, pST->Count);
-				wprintfx(psR, "%#7lu|%#7lu|%#7lu|%#7lu|%#7llu|", pST->Last, pST->Min, pST->Max,
+				wprintfx(psR, "|%2d%c|%8s|%#'7lu|", Num, (STstat & (1UL << Num)) ? 'R' : ' ', pcTag, pST->Count);
+				wprintfx(psR, "%#'7lu|%#'7lu|%#'7lu|%#'7lu|%#'7llu|", pST->Last, pST->Min, pST->Max,
 					(u32_t) (pST->Count ? (pST->Sum / pST->Count) : pST->Sum), pST->Sum);
 				#ifndef CONFIG_FREERTOS_UNICORE
-				if (Type == stCLOCKS) wprintfx(psR, "%#7lu|", pST->Skip);
+				if (Type == stCLOCKS) wprintfx(psR, "%#'7lu|", pST->Skip);
 				#endif
 
 				#if	(systimerSCATTER > 2)
@@ -288,7 +289,7 @@ void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 							Rlo	= ((Idx - 1) * Rtmp) + pST->SGmin;
 							Rhi = Rlo + Rtmp;
 						}
-						wprintfx(psR, "  %d:%#lu~%#lu=%#lu", Idx, Rlo, Rhi, pST->Group[Idx]);
+						wprintfx(psR, "  %d:%#'lu~%#'lu=%#'lu", Idx, Rlo, Rhi, pST->Group[Idx]);
 					}
 				}
 				#endif
