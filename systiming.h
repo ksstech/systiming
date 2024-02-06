@@ -1,5 +1,5 @@
 /*
- * systiming.h - Copyright (c) 2014-23 Andre M. Maree / KSS Technologies (Pty) Ltd.
+ * systiming.h - Copyright (c) 2014-24 Andre M. Maree / KSS Technologies (Pty) Ltd.
  */
 
 #pragma once
