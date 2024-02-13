@@ -49,58 +49,58 @@ enum {
 	stGUI0, stGUI1,
 #endif
 // ####################### DEVICES #######################
-#if	(halHAS_ADE7953 > 0)
+#if	(HAL_ADE7953 > 0)
 	stADE7953R, stADE7953W,
 #endif
-#if (halSOC_DIG_IN > 0)
-	stGDIa, stGDIz = (stGDIa + halSOC_DIG_IN - 1),
+#if (HAL_GDI > 0)
+	stGDIa, stGDIz = (stGDIa + HAL_GDI - 1),
 #endif
-#if	(halHAS_PCA9555 > 0)
+#if	(HAL_PCA9555 > 0)
 	stPCA9555,
 #endif
-#if (halHAS_ONEWIRE > 0)
+#if (HAL_ONEWIRE > 0)
 	stOW1, stOW2,
 #endif
-#if	(halHAS_DS1307 > 0)
+#if	(HAL_DS1307 > 0)
 	stDS1307,
 #endif
-#if	(halHAS_DS248X > 0)
+#if	(HAL_DS248X > 0)
 	stDS248xIO, stDS248x1R, stDS248xWR, stDS248xRD, stDS248xST,
 #endif
-#if	(halHAS_DS18X20 > 0)
+#if	(HAL_DS18X20 > 0)
 	stDS1820A, stDS1820B,
 #endif
-#if	(halHAS_DS1990X > 0)
+#if	(HAL_DS1990X > 0)
 	stDS1990,
 #endif
-#if	(halHAS_LIS2HH12 > 0)
+#if	(HAL_LIS2HH12 > 0)
 	stLIS2HH12,
 #endif
-#if	(halHAS_LTR329ALS > 0)
+#if	(HAL_LTR329ALS > 0)
 	stLTR329ALS,
 #endif
-#if	(halHAS_M90E26 > 0)
+#if	(HAL_M90E26 > 0)
 	stM90EX6R, stM90EX6W,
 #endif
-#if	(halHAS_MCP342X > 0)
+#if	(HAL_MCP342X > 0)
 	stMCP342X,
 #endif
-#if	(halHAS_MPL3115 > 0)
+#if	(HAL_MPL3115 > 0)
 	stMPL3115,
 #endif
-#if	(halHAS_PYCOPROC > 0)
+#if	(HAL_PYCOPROC > 0)
 	stPYCOPROC,
 #endif
-#if	(halHAS_PCF8574 > 0)
+#if	(HAL_PCF8574 > 0)
 	stPCF8574,
 #endif
-#if	(halHAS_SI70XX > 0)
+#if	(HAL_SI70XX > 0)
 	stSI70XX,
 #endif
-#if	(halHAS_SSD1306 > 0)
+#if	(HAL_SSD1306 > 0)
 	stSSD1306A, stSSD1306B,
 #endif
-#if (halHAS_ILI9341 > 0)
+#if (HAL_ILI9341 > 0)
 	stILI9341a, stILI9341b,
 #endif
 	stMAX_NUM,				// last in list, define all required above here
@@ -119,58 +119,58 @@ enum {
 	stGUI0=31, stGUI1=31,
 #endif
 // ####################### DEVICES #######################
-#if	(halHAS_ADE7953 == 0)
+#if	(HAL_ADE7953 == 0)
 	stADE7953R=31,stADE7953W=31,
 #endif
-#if (halSOC_DIG_IN == 0)
+#if (HAL_GDI == 0)
 	stGDIa=31, stGDIz=31,
 #endif
-#if	(halHAS_PCA9555 == 0)
+#if	(HAL_PCA9555 == 0)
 	stPCA9555=31,
 #endif
-#if	(halHAS_ONEWIRE == 0)
+#if	(HAL_ONEWIRE == 0)
 	stOW1=31, stOW2=31,
 #endif
-#if	(halHAS_DS1307 == 0)
+#if	(HAL_DS1307 == 0)
 	stDS1307=31,
 #endif
-#if	(halHAS_DS248X == 0)
+#if	(HAL_DS248X == 0)
 	stDS248xIO=31, stDS248x1R=31, stDS248xWR=31, stDS248xRD=31, stDS248xST=31,
 #endif
-#if	(halHAS_DS18X20 == 0)
+#if	(HAL_DS18X20 == 0)
 	stDS1820A=31, stDS1820B=31,
 #endif
-#if	(halHAS_DS1990X == 0)
+#if	(HAL_DS1990X == 0)
 	stDS1990=31,
 #endif
-#if	(halHAS_LIS2HH12 == 0)
+#if	(HAL_LIS2HH12 == 0)
 	stLIS2HH12=31,
 #endif
-#if	(halHAS_LTR329ALS == 0)
+#if	(HAL_LTR329ALS == 0)
 	stLTR329ALS=31,
 #endif
-#if	(halHAS_M90E26 == 0)
+#if	(HAL_M90E26 == 0)
 	stM90EX6R=31,stM90EX6W=31,
 #endif
-#if	(halHAS_MCP342X == 0)
+#if	(HAL_MCP342X == 0)
 	stMCP342X=31,
 #endif
-#if	(halHAS_MPL3115 == 0)
+#if	(HAL_MPL3115 == 0)
 	stMPL3115=31,
 #endif
-#if	(halHAS_PYCOPROC == 0)
+#if	(HAL_PYCOPROC == 0)
 	stPYCOPROC=31,
 #endif
-#if	(halHAS_PCF8574 == 0)
+#if	(HAL_PCF8574 == 0)
 	stPCF8574=31,
 #endif
-#if	(halHAS_SI70XX == 0)
+#if	(HAL_SI70XX == 0)
 	stSI70XX=31,
 #endif
-#if	(halHAS_SSD1306 == 0)
+#if	(HAL_SSD1306 == 0)
 	stSSD1306A=31, stSSD1306B=31,
 #endif
-#if	(halHAS_ILI9341 == 0)
+#if	(HAL_ILI9341 == 0)
 	stILI9341a=31, stILI9341b=31,
 #endif
 };
