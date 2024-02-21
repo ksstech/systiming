@@ -182,22 +182,18 @@ typedef struct __attribute__((packed)) {
 	u64_t Sum;
 	const char * Tag;
 	#if	(systimerSCATTER > 2)
-	u32_t SGmin, SGmax, Group[systimerSCATTER];
+		u32_t SGmin, SGmax, Group[systimerSCATTER];
+		#define stSCATTER_OVERHEAD		((systimerSCATTER + 2) * sizeof(u32_t))
+	#else
+		#define stSCATTER_OVERHEAD		0
 	#endif
 	#ifndef CONFIG_FREERTOS_UNICORE
-	u32_t Skip;
+		u32_t Skip;
+		#define stDUALCORE_OVERHEAD		sizeof(u32_t)
+	#else
+		#define stDUALCORE_OVERHEAD		0
 	#endif
 } systimer_t;
-#if	(systimerSCATTER > 2)
-	#define stSCATTER_OVERHEAD		((systimerSCATTER + 2) * sizeof(u32_t))
-#else
-	#define stSCATTER_OVERHEAD		0
-#endif
-#ifndef CONFIG_FREERTOS_UNICORE
-	#define stDUALCORE_OVERHEAD		sizeof(u32_t)
-#else
-	#define stDUALCORE_OVERHEAD		0
-#endif
 DUMB_STATIC_ASSERT(sizeof(systimer_t) == 24 + sizeof(char *) + stSCATTER_OVERHEAD + stDUALCORE_OVERHEAD);
 
 // ######################################### Public variables ######################################
