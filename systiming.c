@@ -111,8 +111,11 @@ u32_t xSysTimerStart(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, Type < stMAX_TYPE);
 	#ifndef CONFIG_FREERTOS_UNICORE
 	if (Type == stCLOCKS) {
-		if (xPortGetCoreID()) STcore |= (1UL << TimNum);// Running on Core 1
-		else STcore &= ~(1UL << TimNum);				// Running on Core 0
+		if (xPortGetCoreID()) {
+			STcore |= (1UL << TimNum);					// Running on Core 1
+		} else {
+			STcore &= ~(1UL << TimNum);					// Running on Core 0
+		}
 	}
 	#endif
 	STstat |= (1UL << TimNum);							// Mark as started & running
@@ -147,13 +150,19 @@ u32_t xSysTimerStop(u8_t TimNum) {
 	pST->Sum += tElap;
 	pST->Last = tElap;
 	// update Min & Max if required
-	if (pST->Min > tElap) pST->Min = tElap;
-	if (pST->Max < tElap) pST->Max = tElap;
+	if (pST->Min > tElap) 
+		pST->Min = tElap;
+	if (pST->Max < tElap) 
+		pST->Max = tElap;
 	#if	(systimerSCATTER > 2)
 	int Idx;
-	if (tElap <= pST->SGmin) Idx = 0;
-	else if (tElap >= pST->SGmax) Idx = systimerSCATTER-1;
-	else Idx = 1 + ((tElap-pST->SGmin)*(systimerSCATTER-2)) / (pST->SGmax-pST->SGmin);
+	if (tElap <= pST->SGmin) {
+		Idx = 0;
+	} else if (tElap >= pST->SGmax) {
+		Idx = systimerSCATTER-1;
+	} else {
+		Idx = 1 + ((tElap-pST->SGmin)*(systimerSCATTER-2)) / (pST->SGmax-pST->SGmin);
+	}
 	++pST->Group[Idx];
 	IF_P(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER-1), "l=%lu h=%lu n=%lu i=%d\r\n",
 			pST->SGmin, pST->SGmax, tElap, Idx);
@@ -256,7 +265,9 @@ void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 						(Type == stMICROS) ? stHDR_MICROS : stHDR_CLOCKS,
 						attrRESET);
 					#ifndef CONFIG_FREERTOS_UNICORE
-					if (Type == stCLOCKS) wprintfx(psR, "X-MCU-Y|");
+					if (Type == stCLOCKS){
+						wprintfx(psR, "X-MCU-Y|");
+					}
 					#endif
 					wprintfx(psR, strCRLF);
 					HdrDone = 1;
@@ -271,7 +282,9 @@ void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 				wprintfx(psR, "%#'7lu|%#'7lu|%#'7lu|%#'7lu|%#'7llu|", pST->Last, pST->Min, pST->Max,
 					(u32_t) (pST->Count ? (pST->Sum / pST->Count) : pST->Sum), pST->Sum);
 				#ifndef CONFIG_FREERTOS_UNICORE
-				if (Type == stCLOCKS) wprintfx(psR, "%#'7lu|", pST->Skip);
+				if (Type == stCLOCKS) {
+					wprintfx(psR, "%#'7lu|", pST->Skip);
+				}
 				#endif
 
 				#if	(systimerSCATTER > 2)
@@ -304,12 +317,14 @@ void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 
 i64_t i64TaskDelayUsec(u32_t u32Period) {
 	i64_t i64Start = esp_timer_get_time();
-	if (u32Period < 2) return esp_timer_get_time() - i64Start;
+	if (u32Period < 2)
+		return esp_timer_get_time() - i64Start;
 	i64_t i64Period = u32Period;
 	i64_t i64Now;
 	UBaseType_t CurPri = uxTaskPriorityGet(NULL);
 	vTaskPrioritySet(NULL, 0);
-	while ((i64Now = esp_timer_get_time() - i64Start) < i64Period) taskYIELD();
+	while ((i64Now = esp_timer_get_time() - i64Start) < i64Period) 
+		taskYIELD();
 	vTaskPrioritySet(NULL, CurPri);
 	return i64Now;
 }
