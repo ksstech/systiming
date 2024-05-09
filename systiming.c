@@ -164,7 +164,7 @@ u32_t xSysTimerStop(u8_t TimNum) {
 		Idx = 1 + ((tElap-pST->SGmin)*(systimerSCATTER-2)) / (pST->SGmax-pST->SGmin);
 	}
 	++pST->Group[Idx];
-	IF_P(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER-1), "l=%lu h=%lu n=%lu i=%d\r\n",
+	IF_PX(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER-1), "l=%lu h=%lu n=%lu i=%d\r\n",
 			pST->SGmin, pST->SGmax, tElap, Idx);
 	IF_myASSERT(debugRESULT, INRANGE(0, Idx, systimerSCATTER-1));
 	#endif
@@ -260,10 +260,10 @@ void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 			systimer_t * pST = &STdata[Num];
 			if ((TimerMask & Mask) && (Type == GetTT(Num)) && pST->Count) {
 				if (HdrDone == 0) {
-					wprintfx(psR, "%C| # |  Name  | Count |Last%s%C", colourFG_CYAN,
+					wprintfx(psR, "%C| # |  Name  | Count |Last%s%C", xpfSGR(0,0,colourFG_CYAN,0),
 						(Type == stMILLIS) ? stHDR_TICKS :
 						(Type == stMICROS) ? stHDR_MICROS : stHDR_CLOCKS,
-						attrRESET);
+						xpfSGR(0,0,attrRESET,0));
 					#ifndef CONFIG_FREERTOS_UNICORE
 					if (Type == stCLOCKS){
 						wprintfx(psR, "X-MCU-Y|");
@@ -272,7 +272,7 @@ void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 					wprintfx(psR, strCRLF);
 					HdrDone = 1;
 				}
-				if (halCONFIG_inMEM(pST->Tag)) {
+				if (halMEM_AddrInANY(pST->Tag)) {
 					pcTag = pST->Tag;
 				} else {
 					snprintfx(caTmp, sizeof(caTmp), "%8d", pST->Tag);
