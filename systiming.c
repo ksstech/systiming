@@ -1,15 +1,14 @@
-/*
- * systiming.c - Copyright (c) 2014-24 Andre M. Maree / KSS Technologies (Pty) Ltd.
- */
+// systiming.c - Copyright (c) 2014-24 Andre M. Maree / KSS Technologies (Pty) Ltd.
 
 #include <string.h>
 
 #include "systiming.h"
+#include "hal_memory.h"
 #include "struct_union.h"
 #include "printfx.h"				// +x_definitions +stdarg +stdint +stdio
 #include "FreeRTOS_Support.h"
 
-#include <xtensa/hal.h>
+#include "xtensa/hal.h"
 #include "esp_timer.h"
 
 #define	debugFLAG					0xF000
