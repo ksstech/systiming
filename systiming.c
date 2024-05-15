@@ -271,7 +271,7 @@ void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 					wprintfx(psR, strCRLF);
 					HdrDone = 1;
 				}
-				if (halMEM_AddrInANY(pST->Tag)) {
+				if (halMEM_AddrInANY((void *)pST->Tag)) {
 					pcTag = pST->Tag;
 				} else {
 					snprintfx(caTmp, sizeof(caTmp), "%8d", pST->Tag);
