@@ -268,7 +268,7 @@ void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 						wprintfx(psR, "X-MCU-Y|");
 					}
 					#endif
-					wprintfx(psR, strCRLF);
+					wprintfx(psR, strNL);
 					HdrDone = 1;
 				}
 				if (halMEM_AddrInANY((void *)pST->Tag)) {
@@ -305,11 +305,11 @@ void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 					}
 				}
 				#endif
-				wprintfx(psR, strCRLF);		// end of scatter groups for specific timer
+				wprintfx(psR, strNL);		// end of scatter groups for specific timer
 			}
 		}
 	}
-	wprintfx(psR, strCRLF);
+	wprintfx(psR, strNL);
 }
 
 // ################################### RTOS + HW delay support #####################################
