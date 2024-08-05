@@ -206,7 +206,7 @@ u32_t xSysTimerIsRunning(u8_t TimNum) {
  * @return	Type
  */
 int	xSysTimerGetStatus(u8_t TimNum, systimer_t * pST) {
-	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM && halCONFIG_inSRAM(pST));
+	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM && halMemorySRAM(pST));
 	memcpy(pST, &STdata[TimNum], sizeof(systimer_t));
 	return GetTT(TimNum);
 }
@@ -271,7 +271,7 @@ void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 					wprintfx(psR, strNL);
 					HdrDone = 1;
 				}
-				if (halMEM_AddrInANY((void *)pST->Tag)) {
+				if (halMemoryANY((void *)pST->Tag)) {
 					pcTag = pST->Tag;
 				} else {
 					snprintfx(caTmp, sizeof(caTmp), "%8d", pST->Tag);
