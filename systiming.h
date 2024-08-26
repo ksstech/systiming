@@ -50,9 +50,6 @@ enum {
 #if	(HAL_ADE7953 > 0)
 	stADE7953R, stADE7953W,
 #endif
-#if (HAL_GDI > 0)
-	stGDIa, stGDIz = (stGDIa + HAL_GDI - 1),
-#endif
 #if	(HAL_PCA9555 > 0)
 	stPCA9555,
 #endif
@@ -98,6 +95,9 @@ enum {
 #if	(HAL_SSD1306 > 0)
 	stSSD1306A, stSSD1306B,
 #endif
+#if (HAL_WS281X > 0)
+	stWS281X,
+#endif
 #if (HAL_ILI9341 > 0)
 	stILI9341a, stILI9341b,
 #endif
@@ -119,9 +119,6 @@ enum {
 // ####################### DEVICES #######################
 #if	(HAL_ADE7953 == 0)
 	stADE7953R=31,stADE7953W=31,
-#endif
-#if (HAL_GDI == 0)
-	stGDIa=31, stGDIz=31,
 #endif
 #if	(HAL_PCA9555 == 0)
 	stPCA9555=31,
@@ -167,6 +164,9 @@ enum {
 #endif
 #if	(HAL_SSD1306 == 0)
 	stSSD1306A=31, stSSD1306B=31,
+#endif
+#if (HAL_WS281X == 0)
+	stWS281X = 31,
 #endif
 #if	(HAL_ILI9341 == 0)
 	stILI9341a=31, stILI9341b=31,
