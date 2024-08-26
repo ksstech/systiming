@@ -309,9 +309,8 @@ u32_t xClockDelayMsec(u32_t mSec) {
 #define	systimerTEST_CLOCKS			1
 
 void vSysTimingTestSet(u32_t Type, char * Tag, u32_t Delay) {
-	for (u8_t Idx = 0; Idx < stMAX_NUM; ++Idx) {
+	for (u8_t Idx = 0; Idx < stMAX_NUM; ++Idx)
 		vSysTimerInit(Idx, Type, Tag, myMS_TO_TICKS(Delay), myMS_TO_TICKS(Delay * systimerSCATTER));
-	}
 	for (u32_t Steps = 0; Steps <= systimerSCATTER; ++Steps) {
 		for (u32_t Count = 0; Count < stMAX_NUM; xSysTimerStart(Count++));
 		vTaskDelay(pdMS_TO_TICKS((Delay * Steps) + 1));
