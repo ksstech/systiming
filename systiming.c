@@ -208,6 +208,10 @@ u64_t xSysTimerGetElapsedSecs(u8_t TimNum) {
 #define	stHDR_TICKS		" mS|Min mS |Max mS |Avg mS |Sum mS |"
 #define	stHDR_MICROS	" uS|Min uS |Max uS |Avg uS |Sum uS |"
 #define	stHDR_CLOCKS	"Clk|Min Clk|Max Clk|Avg Clk|Sum Clk|"
+#define stHDR_FMT1		"%C| # |  Name  | Count |Last%s%C"
+#define stHDR_FMT2		"X-MCU-Y|"
+#define stDTL_FMT1		"|%2d%c|%8s|%#'7lu|"
+#define stDTL_FMT2		"%#'7lu|%#'7lu|%#'7lu|%#'7lu|%#'7llu|"
 
 void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 	const char * pcTag;
@@ -219,51 +223,47 @@ void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 			systimer_t * pST = &STdata[Num];
 			if ((TimerMask & Mask) && (Type == GetTT(Num)) && pST->Count) {
 				if (HdrDone == 0) {
-					wprintfx(psR, "%C| # |  Name  | Count |Last%s%C", xpfSGR(0,0,colourFG_CYAN,0),
+					wprintfx(psR, stHDR_FMT1, xpfSGR(0,0,colourFG_CYAN,0),
 						(Type == stMILLIS) ? stHDR_TICKS :
 						(Type == stMICROS) ? stHDR_MICROS : stHDR_CLOCKS,
 						xpfSGR(0,0,attrRESET,0));
-					#ifndef CONFIG_FREERTOS_UNICORE
-					if (Type == stCLOCKS){
-						wprintfx(psR, "X-MCU-Y|");
-					}
-					#endif
+				#ifndef CONFIG_FREERTOS_UNICORE
+					if (Type == stCLOCKS)
+						wprintfx(psR, stHDR_FMT2);
+				#endif
 					wprintfx(psR, strNL);
 					HdrDone = 1;
 				}
 				if (halMemoryANY((void *)pST->Tag)) {
 					pcTag = pST->Tag;
 				} else {
-					snprintfx(caTmp, sizeof(caTmp), "%8d", pST->Tag);
+					snprintfx(caTmp, sizeof(caTmp), "T#%d+%d", pST->Tag, Num - (int)pST->Tag);
 					pcTag = caTmp;
 				}
-				wprintfx(psR, "|%2d%c|%8s|%#'7lu|", Num, (STstat & (1UL << Num)) ? 'R' : ' ', pcTag, pST->Count);
-				wprintfx(psR, "%#'7lu|%#'7lu|%#'7lu|%#'7lu|%#'7llu|", pST->Last, pST->Min, pST->Max,
-					(u32_t) (pST->Count ? (pST->Sum / pST->Count) : pST->Sum), pST->Sum);
+				wprintfx(psR, stDTL_FMT1, Num, (STstat & (1UL << Num)) ? 'R' : ' ', pcTag, pST->Count);
+				wprintfx(psR, stDTL_FMT2, pST->Last, pST->Min, pST->Max,(u32_t) (pST->Count ? (pST->Sum / pST->Count) : pST->Sum), pST->Sum);
 				#ifndef CONFIG_FREERTOS_UNICORE
-				if (Type == stCLOCKS) {
-					wprintfx(psR, "%#'7lu|", pST->Skip);
-				}
+					if (Type == stCLOCKS)
+						wprintfx(psR, "%#'7lu|", pST->Skip);
 				#endif
-
 				#if	(systimerSCATTER > 2)
-				u32_t Rlo, Rhi;
-				for (int Idx = 0; Idx < systimerSCATTER; ++Idx) {
-					if (pST->Group[Idx]) {
-						if (Idx == 0) {
-							Rlo = 0;
-							Rhi = pST->SGmin;
-						} else if (Idx == (systimerSCATTER-1)) {
-							Rlo = pST->SGmax;
-							Rhi = 0xFFFFFFFF;
-						} else {
-							u32_t Rtmp = (pST->SGmax - pST->SGmin) / (systimerSCATTER-2);
-							Rlo	= ((Idx - 1) * Rtmp) + pST->SGmin;
-							Rhi = Rlo + Rtmp;
+					u32_t Rlo, Rhi;
+					for (int Idx = 0; Idx < systimerSCATTER; ++Idx) {
+						if (pST->Group[Idx]) {
+							if (Idx == 0) {
+								Rlo = 0;
+								Rhi = pST->SGmin;
+							} else if (Idx == (systimerSCATTER-1)) {
+								Rlo = pST->SGmax;
+								Rhi = 0xFFFFFFFF;
+							} else {
+								u32_t Rtmp = (pST->SGmax - pST->SGmin) / (systimerSCATTER-2);
+								Rlo	= ((Idx - 1) * Rtmp) + pST->SGmin;
+								Rhi = Rlo + Rtmp;
+							}
+							wprintfx(psR, "  %d:%#'lu~%#'lu=%#'lu", Idx, Rlo, Rhi, pST->Group[Idx]);
 						}
-						wprintfx(psR, "  %d:%#'lu~%#'lu=%#'lu", Idx, Rlo, Rhi, pST->Group[Idx]);
 					}
-				}
 				#endif
 				wprintfx(psR, strNL);		// end of scatter groups for specific timer
 			}
