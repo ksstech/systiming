@@ -195,27 +195,92 @@ typedef struct __attribute__((packed)) {
 DUMB_STATIC_ASSERT(sizeof(systimer_t) == 24 + sizeof(char *) + stSCATTER_OVERHEAD + stDUALCORE_OVERHEAD);
 
 // ######################################### Public variables ######################################
-
-
 // ######################################### Public functions ######################################
 
+/**
+ * @brief	Reset all the timer values for a single timer #
+ * @brief 	This function does NOT reset SGmin & SGmax. To reset Min/Max use vSysTimerInit()
+ * @brief	which allows for the type to be changed as well as specifying new Min/Max values.
+ * @param 	TimNum
+ */
 void vSysTimerResetCounters(u8_t TimNum);
-void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...);
+
+/**
+ * @brief	Reset all the timer values for 1 or more timers
+ * @brief 	This function does NOT reset SGmin & SGmax. To reset Min/Max use vSysTimerInit()
+ * @brief	which allows for the type to be changed as well as specifying new Min/Max values.
+ * @param	TimerMask
+ */
 void vSysTimerResetCountersMask(u32_t TimerMask);
+
+void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...);
+
+/**
+ * @brief	start the specified timer
+ * @param 	TimNum
+ * @return	current timer value based on type (CLOCKs or TICKs)
+ */
 u32_t xSysTimerStart(u8_t TimNum);
+
+/**
+ * @brief	stop the specified timer and update the statistics
+ * @param	TimNum
+ * @return	Last measured interval based on type (CLOCKs or TICKs)
+ */
 u32_t xSysTimerStop(u8_t TimNum);
+
 u32_t xSysTimerToggle(u8_t TimNum);
+
+/**
+ * @brief	Check if timer is running
+ * @param	TimNum
+ * @return	0 if not running else current elapsed timer value based on type (CLOCKs or TICKSs)
+ */
 u32_t xSysTimerIsRunning(u8_t TimNum);
+
+/**
+ * @brief	return the current timer values and type
+ * @param	TimNum
+ * @param	pST
+ * @return	Type
+ */
 int	xSysTimerGetStatus(u8_t TimNum, systimer_t *);
+
 u64_t xSysTimerGetElapsedClocks(u8_t TimNum);
 u64_t xSysTimerGetElapsedMicros(u8_t TimNum);
 u64_t xSysTimerGetElapsedMillis(u8_t TimNum);
 u64_t xSysTimerGetElapsedSecs(u8_t TimNum);
+
 struct report_t;
+/**
+ * @brief	display the current value(s) of the specified timer(s)
+ * @brief	MUST do a SysTimerStop() before calling to freeze accurate value in array
+ * @param	tMask 8bit bitmapped flag to select timer(s) to display
+ * @return	none
+ */
 void vSysTimerShow(struct report_t * psR, u32_t TimerMask);
+
+/**
+ * @brief	delay by yielding program execution for a specified number of uSecs
+ * @param	u32Period of uSecs to delay
+ * @return	Clock counter at the end
+ */
 i64_t i64TaskDelayUsec(u32_t u32Period);
+
+/**
+ * @brief	delay (not yielding) program execution for a specified number of uSecs
+ * @param	Number of uSecs to delay
+ * @return	Clock counter at the end
+ */
 u32_t xClockDelayUsec(u32_t uSec);
+
+/**
+ * @brief	delay (not yielding) program execution for a specified number of mSecs
+ * @param	Number of mSecs to delay
+ * @return	Clock counter at the end
+ */
 u32_t xClockDelayMsec(u32_t mSec);
+
 void vSysTimingTest(void);
 
 #ifdef __cplusplus

@@ -37,12 +37,6 @@ static u64_t STtype = 0;
 	static u32_t STcore = 0;							// Core# 0/1
 #endif
 
-/**
- * vSysTimerResetCounters() -Reset all the timer values for a single timer #
- * @brief 	This function does NOT reset SGmin & SGmax. To reset Min/Max use vSysTimerInit()
- * @brief	which allows for the type to be changed as well as specifying new Min/Max values.
- * @param 	TimNum
- */
 void vSysTimerResetCounters(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
 	systimer_t *pST	= &STdata[TimNum];
@@ -57,12 +51,6 @@ void vSysTimerResetCounters(u8_t TimNum) {
 	#endif
 }
 
-/**
- * vSysTimerResetCountersMask() - Reset all the timer values for 1 or more timers
- * @brief 	This function does NOT reset SGmin & SGmax. To reset Min/Max use vSysTimerInit()
- * @brief	which allows for the type to be changed as well as specifying new Min/Max values.
- * @param	TimerMask
- */
 void vSysTimerResetCountersMask(u32_t TimerMask) {
 	u32_t mask = 0x00000001;
 	systimer_t *pST	= STdata;
@@ -99,11 +87,6 @@ void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...) {
 	#endif
 }
 
-/**
- * xSysTimerStart() - start the specified timer
- * @param 		TimNum
- * @return		current timer value based on type (CLOCKs or TICKs)
- */
 u32_t xSysTimerStart(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
 	int Type = GetTT(TimNum);
@@ -122,11 +105,6 @@ u32_t xSysTimerStart(u8_t TimNum) {
 	return STdata[TimNum].Last = GetTimer(Type);
 }
 
-/**
- * xSysTimerStop() stop the specified timer and update the statistics
- * @param	TimNum
- * @return	Last measured interval based on type (CLOCKs or TICKs)
- */
 u32_t xSysTimerStop(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
 	int Type = GetTT(TimNum);
@@ -175,12 +153,6 @@ u32_t xSysTimerToggle(u8_t TimNum) {
 	return (STstat & (1 << TimNum)) ? xSysTimerStop(TimNum) : xSysTimerStart(TimNum);
 }
 
-/**
- * xSysTimerIsRunning() -  if timer is running, return value else 0
- * @param	TimNum
- * @return	0 if not running
- * 			current elapsed timer value based on type (CLOCKs or TICKSs)
- */
 u32_t xSysTimerIsRunning(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
 	u32_t tNow = 0;
@@ -199,12 +171,6 @@ u32_t xSysTimerIsRunning(u8_t TimNum) {
 	return tNow;
 }
 
-/**
- * @brief	return the current timer values and type
- * @param	TimNum
- * @param	pST
- * @return	Type
- */
 int	xSysTimerGetStatus(u8_t TimNum, systimer_t * pST) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM && halMemorySRAM(pST));
 	memcpy(pST, &STdata[TimNum], sizeof(systimer_t));
@@ -243,12 +209,6 @@ u64_t xSysTimerGetElapsedSecs(u8_t TimNum) {
 #define	stHDR_MICROS	" uS|Min uS |Max uS |Avg uS |Sum uS |"
 #define	stHDR_CLOCKS	"Clk|Min Clk|Max Clk|Avg Clk|Sum Clk|"
 
-/**
- * vSysTimerShow(tMask) - display the current value(s) of the specified timer(s)
- * @brief	MUST do a SysTimerStop() before calling to freeze accurate value in array
- * @param	tMask 8bit bitmapped flag to select timer(s) to display
- * @return	none
- */
 void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 	const char * pcTag;
 	char caTmp[12];
@@ -330,11 +290,6 @@ i64_t i64TaskDelayUsec(u32_t u32Period) {
 
 // ################################## MCU Clock cycle delay support ################################
 
-/**
- * vClockDelayUsec() - delay (not yielding) program execution for a specified number of uSecs
- * @param	Number of uSecs to delay
- * @return	Clock counter at the end
- */
 u32_t xClockDelayUsec(u32_t uSec) {
 	IF_myASSERT(debugPARAM, uSec < (UINT32_MAX / configCLOCKS_PER_USEC));
 	u32_t ClockEnd	= GET_CLOCK_COUNTER() + halUS_TO_CLOCKS(uSec);
@@ -342,11 +297,6 @@ u32_t xClockDelayUsec(u32_t uSec) {
 	return ClockEnd;
 }
 
-/**
- * xClockDelayMsec() - delay (not yielding) program execution for a specified number of mSecs
- * @param	Number of mSecs to delay
- * #return	Clock counter at the end
- */
 u32_t xClockDelayMsec(u32_t mSec) {
 	IF_myASSERT(debugPARAM, mSec < (UINT32_MAX / configCLOCKS_PER_MSEC));
 	return xClockDelayUsec(mSec * MICROS_IN_MILLISEC);
