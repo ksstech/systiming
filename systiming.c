@@ -172,7 +172,7 @@ u32_t xSysTimerIsRunning(u8_t TimNum) {
 }
 
 int	xSysTimerGetStatus(u8_t TimNum, systimer_t * pST) {
-	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM && halMemorySRAM(pST));
+	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM && halMemorySRAM((void*) pST));
 	memcpy(pST, &STdata[TimNum], sizeof(systimer_t));
 	return GetTT(TimNum);
 }
