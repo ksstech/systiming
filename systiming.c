@@ -67,23 +67,23 @@ void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...) {
 	SetTT(TimNum, Type);
 	vSysTimerResetCounters(TimNum);
 	#if	(systimerSCATTER > 2)
-    va_list vaList;
-    va_start(vaList, Tag);
-    // Assume default type is stMICROS so values in uSec
-	pST->SGmin	= va_arg(vaList, u32_t);
-	pST->SGmax	= va_arg(vaList, u32_t);
-	IF_myASSERT(debugPARAM, pST->SGmin < pST->SGmax);
-	// if stMILLIS handle uSec to Ticks conversion
-	if (Type == stMILLIS) {
-		#if (CONFIG_FREERTOS_HZ < MILLIS_IN_SECOND)
-		pST->SGmin /= (MILLIS_IN_SECOND / CONFIG_FREERTOS_HZ);
-		pST->SGmax /= (MILLIS_IN_SECOND / CONFIG_FREERTOS_HZ);
-		#elif (CONFIG_FREERTOS_HZ > MILLIS_IN_SECOND)
-		pST->SGmin *= (CONFIG_FREERTOS_HZ / MILLIS_IN_SECOND);
-		pST->SGmax *= (CONFIG_FREERTOS_HZ / MILLIS_IN_SECOND);
-		#endif
-	}
-	va_end(vaList);
+    	va_list vaList;
+    	va_start(vaList, Tag);
+    	// Assume default type is stMICROS so values in uSec
+		pST->SGmin	= va_arg(vaList, u32_t);
+		pST->SGmax	= va_arg(vaList, u32_t);
+		IF_myASSERT(debugPARAM, pST->SGmin < pST->SGmax);
+		// if stMILLIS handle uSec to Ticks conversion
+		if (Type == stMILLIS) {
+			#if (CONFIG_FREERTOS_HZ < MILLIS_IN_SECOND)
+				pST->SGmin /= (MILLIS_IN_SECOND / CONFIG_FREERTOS_HZ);
+				pST->SGmax /= (MILLIS_IN_SECOND / CONFIG_FREERTOS_HZ);
+				#elif (CONFIG_FREERTOS_HZ > MILLIS_IN_SECOND)
+				pST->SGmin *= (CONFIG_FREERTOS_HZ / MILLIS_IN_SECOND);
+				pST->SGmax *= (CONFIG_FREERTOS_HZ / MILLIS_IN_SECOND);
+			#endif
+		}
+		va_end(vaList);
 	#endif
 }
 
