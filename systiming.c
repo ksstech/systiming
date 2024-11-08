@@ -37,7 +37,7 @@ static u64_t STtype = 0;
 	static u32_t STcore = 0;							// Core# 0/1
 #endif
 
-void vSysTimerResetCounters(u8_t TimNum) {
+void vSysTimerResetCounter(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
 	systimer_t *pST	= &STdata[TimNum];
 	STstat		&= ~(1UL << TimNum);					// clear active status ie STOP
@@ -65,7 +65,7 @@ void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...) {
 	systimer_t *pST	= &STdata[TimNum];
 	pST->Tag = Tag;
 	SetTT(TimNum, Type);
-	vSysTimerResetCounters(TimNum);
+	vSysTimerResetCounter(TimNum);
 	#if	(systimerSCATTER > 2)
     	va_list vaList;
     	va_start(vaList, Tag);
@@ -93,11 +93,8 @@ u32_t xSysTimerStart(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, Type < stMAX_TYPE);
 	#ifndef CONFIG_FREERTOS_UNICORE
 	if (Type == stCLOCKS) {
-		if (xPortGetCoreID()) {
-			STcore |= (1UL << TimNum);					// Running on Core 1
-		} else {
-			STcore &= ~(1UL << TimNum);					// Running on Core 0
-		}
+		if (xPortGetCoreID()) STcore |= (1UL<<TimNum);	// Running on Core 1
+		else STcore &= ~(1UL << TimNum);				// Running on Core 0
 	}
 	#endif
 	STstat |= (1UL << TimNum);							// Mark as started & running
@@ -127,19 +124,13 @@ u32_t xSysTimerStop(u8_t TimNum) {
 	pST->Sum += tElap;
 	pST->Last = tElap;
 	// update Min & Max if required
-	if (pST->Min > tElap) 
-		pST->Min = tElap;
-	if (pST->Max < tElap) 
-		pST->Max = tElap;
+	if (pST->Min > tElap) pST->Min = tElap;
+	if (pST->Max < tElap) pST->Max = tElap;
 	#if	(systimerSCATTER > 2)
 	int Idx;
-	if (tElap <= pST->SGmin) {
-		Idx = 0;
-	} else if (tElap >= pST->SGmax) {
-		Idx = systimerSCATTER-1;
-	} else {
-		Idx = 1 + ((tElap-pST->SGmin)*(systimerSCATTER-2)) / (pST->SGmax-pST->SGmin);
-	}
+	if (tElap <= pST->SGmin)		Idx = 0;
+	else if (tElap >= pST->SGmax)	Idx = systimerSCATTER-1;
+	else 							Idx = 1 + ((tElap-pST->SGmin)*(systimerSCATTER-2)) / (pST->SGmax-pST->SGmin);
 	++pST->Group[Idx];
 	IF_PX(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER-1), "l=%lu h=%lu n=%lu i=%d\r\n",
 			pST->SGmin, pST->SGmax, tElap, Idx);
