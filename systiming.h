@@ -42,7 +42,7 @@ enum {
 //	stFOTA,
 //	stTFTP,							// TFTP task execution timing...
 //	stRTOS,
-#if (buildGUI > 0)
+#if (appGUI > 0)
 	stGUI0, stGUI1,
 #endif
 // ####################### DEVICES #######################
@@ -111,7 +111,7 @@ enum {
 	stFOTA=31,
 	stTFTP=31,
 	stRTOS=31,
-#if (buildGUI == 0)
+#if (appGUI == 0)
 	stGUI0=31, stGUI1=31,
 #endif
 // ####################### DEVICES #######################
