@@ -59,7 +59,7 @@ enum {
 	stDS1307,
 #endif
 #if	(HAL_DS248X > 0)
-//	stDS248xIO, stDS248x1R, stDS248xWR, stDS248xRD, stDS248xST,
+	stDS248x,
 #endif
 #if	(HAL_DS18X20 > 0)
 	stDS1820A, stDS1820B,
@@ -127,9 +127,9 @@ enum {
 #if	(HAL_DS1307 == 0)
 	stDS1307=31,
 #endif
-//#if	(HAL_DS248X == 0)
-	stDS248xIO=31, stDS248x1R=31, stDS248xWR=31, stDS248xRD=31, stDS248xST=31,
-//#endif
+#if	(HAL_DS248X == 0)
+	stDS248xIO=31,
+#endif
 #if	(HAL_DS18X20 == 0)
 	stDS1820A=31, stDS1820B=31,
 #endif
