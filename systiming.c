@@ -5,7 +5,7 @@
 #include "systiming.h"
 #include "hal_memory.h"
 #include "struct_union.h"
-#include "printfx.h"				// +x_definitions +stdarg +stdint +stdio
+#include "report.h"				// +x_definitions +stdarg +stdint +stdio
 #include "FreeRTOS_Support.h"
 
 #include "xtensa/hal.h"
