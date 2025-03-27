@@ -315,15 +315,15 @@ void vSysTimingTest(void) {
 	u32_t	uClock, uSecs;
 	uClock	= xthal_get_ccount();
 	uSecs	= xClockDelayUsec(100);
-	wprintfx(NULL, "Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
+	PX("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
 
 	uClock	= xthal_get_ccount();
 	uSecs	= xClockDelayUsec(1000);
-	wprintfx(NULL, "Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
+	PX("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
 
 	uClock	= xthal_get_ccount();
 	uSecs	= xClockDelayUsec(10000);
-	wprintfx(NULL, "Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
+	PX("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
 	#endif
 	#if (systimerTEST_TICKS == 1)						// Test TICK timers & Scatter groups
 	vSysTimingTestSet(stMILLIS, "TICKS", 1);
