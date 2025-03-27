@@ -214,15 +214,15 @@ void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 			systimer_t * pST = &STdata[Num];
 			if ((TimerMask & Mask) && (Type == GetTT(Num)) && pST->Count) {
 				if (HdrDone == 0) {
-					wprintfx(psR, stHDR_FMT1, xpfSGR(0,0,colourFG_CYAN,0),
+					report(psR, stHDR_FMT1, xpfSGR(0,0,colourFG_CYAN,0),
 						(Type == stMILLIS) ? stHDR_TICKS :
 						(Type == stMICROS) ? stHDR_MICROS : stHDR_CLOCKS,
 						xpfSGR(0,0,attrRESET,0));
 				#ifndef CONFIG_FREERTOS_UNICORE
 					if (Type == stCLOCKS)
-						wprintfx(psR, stHDR_FMT2);
+						report(psR, stHDR_FMT2);
 				#endif
-					wprintfx(psR, strNL);
+					report(psR, strNL);
 					HdrDone = 1;
 				}
 				if (halMemoryANY((void *)pST->Tag)) {
@@ -231,11 +231,11 @@ void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 					snprintfx(caTmp, sizeof(caTmp), "T#%d+%d", pST->Tag, Num - (int)pST->Tag);
 					pcTag = caTmp;
 				}
-				wprintfx(psR, stDTL_FMT1, Num, (STstat & (1UL << Num)) ? 'R' : ' ', pcTag, pST->Count);
-				wprintfx(psR, stDTL_FMT2, pST->Last, pST->Min, pST->Max,(u32_t) (pST->Count ? (pST->Sum / pST->Count) : pST->Sum), pST->Sum);
+				report(psR, stDTL_FMT1, Num, (STstat & (1UL << Num)) ? 'R' : ' ', pcTag, pST->Count);
+				report(psR, stDTL_FMT2, pST->Last, pST->Min, pST->Max,(u32_t) (pST->Count ? (pST->Sum / pST->Count) : pST->Sum), pST->Sum);
 				#ifndef CONFIG_FREERTOS_UNICORE
 					if (Type == stCLOCKS)
-						wprintfx(psR, "%#'7lu|", pST->Skip);
+						report(psR, "%#'7lu|", pST->Skip);
 				#endif
 				#if	(systimerSCATTER > 2)
 					u32_t Rlo, Rhi;
@@ -252,15 +252,15 @@ void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 								Rlo	= ((Idx - 1) * Rtmp) + pST->SGmin;
 								Rhi = Rlo + Rtmp;
 							}
-							wprintfx(psR, "  %d:%#'lu~%#'lu=%#'lu", Idx, Rlo, Rhi, pST->Group[Idx]);
+							report(psR, "  %d:%#'lu~%#'lu=%#'lu", Idx, Rlo, Rhi, pST->Group[Idx]);
 						}
 					}
 				#endif
-				wprintfx(psR, strNL);		// end of scatter groups for specific timer
+				report(psR, strNL);		// end of scatter groups for specific timer
 			}
 		}
 	}
-	wprintfx(psR, strNL);
+	report(psR, strNL);
 }
 
 // ################################### RTOS + HW delay support #####################################
