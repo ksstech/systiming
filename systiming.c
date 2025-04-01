@@ -132,7 +132,7 @@ u32_t xSysTimerStop(u8_t TimNum) {
 	else if (tElap >= pST->SGmax)	Idx = systimerSCATTER-1;
 	else 							Idx = 1 + ((tElap-pST->SGmin)*(systimerSCATTER-2)) / (pST->SGmax-pST->SGmin);
 	++pST->Group[Idx];
-	IF_PX(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER-1), "l=%lu h=%lu n=%lu i=%d\r\n",
+	IF_PX(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER-1), "l=%lu h=%lu n=%lu i=%d" strNL,
 			pST->SGmin, pST->SGmax, tElap, Idx);
 	IF_myASSERT(debugRESULT, INRANGE(0, Idx, systimerSCATTER-1));
 	#endif
@@ -315,15 +315,15 @@ void vSysTimingTest(void) {
 	u32_t	uClock, uSecs;
 	uClock	= xthal_get_ccount();
 	uSecs	= xClockDelayUsec(100);
-	PX("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
+	PX("Delay=%'lu uS" strNL, (uSecs - uClock) / configCLOCKS_PER_USEC);
 
 	uClock	= xthal_get_ccount();
 	uSecs	= xClockDelayUsec(1000);
-	PX("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
+	PX("Delay=%'lu uS" strNL, (uSecs - uClock) / configCLOCKS_PER_USEC);
 
 	uClock	= xthal_get_ccount();
 	uSecs	= xClockDelayUsec(10000);
-	PX("Delay=%'u uS\r\n", (uSecs - uClock) / configCLOCKS_PER_USEC);
+	PX("Delay=%'lu uS" strNL, (uSecs - uClock) / configCLOCKS_PER_USEC);
 	#endif
 	#if (systimerTEST_TICKS == 1)						// Test TICK timers & Scatter groups
 	vSysTimingTestSet(stMILLIS, "TICKS", 1);
