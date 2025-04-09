@@ -86,7 +86,7 @@ enum {
 	stPYCOPROC,
 #endif
 #if	(HAL_PCF8574 > 0)
-	stPCF8574A, stPCF8574B,
+	stPCF8574,
 #endif
 #if	(HAL_SI70XX > 0)
 	stSI70XX,
@@ -155,7 +155,7 @@ enum {
 	stPYCOPROC=31,
 #endif
 #if	(HAL_PCF8574 == 0)
-	stPCF8574A=31, stPCF8574B=31,
+	stPCF8574=31,
 #endif
 #if	(HAL_SI70XX == 0)
 	stSI70XX=31,
