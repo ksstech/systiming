@@ -226,10 +226,16 @@ u64_t xSysTimerGetElapsedSecs(u8_t TimNum) {
 	return tElap;
 }
 
-#define	stHDR_TICKS		" mS|Min mS |Max mS |Avg mS |Sum mS |"
-#define	stHDR_MICROS	" uS|Min uS |Max uS |Avg uS |Sum uS |"
-#define	stHDR_CLOCKS	"Clk|Min Clk|Max Clk|Avg Clk|Sum Clk|"
-#define stHDR_FMT1		"%C| # |  Name  | Count |Last%s%C"
+// ################################## Timer status reporting #######################################
+
+#if (CONFIG_FREERTOS_HZ == MILLIS_IN_SECOND)
+#define	stHDR_MILLIS	" mS |Min mS |Max mS |Avg mS |Sum mS |"
+#else
+#define	stHDR_MILLIS	"Tick|MinTick|MaxTick|AvgTick|SumTick|"
+#endif
+#define	stHDR_MICROS	" uS |Min uS |Max uS |Avg uS |Sum uS |"
+#define	stHDR_CLOCKS	"Clk |Min Clk|Max Clk|Avg Clk|Sum Clk|"
+#define stHDR_FMT1		"%C| # |  Name  | Count |Prv%s%C"
 #define stHDR_FMT2		"X-MCU-Y|"
 #define stDTL_FMT1		"|%2d%c|%8s|%#'7lu|"
 #define stDTL_FMT2		"%#'7lu|%#'7lu|%#'7lu|%#'7lu|%#'7llu|"
@@ -237,37 +243,37 @@ u64_t xSysTimerGetElapsedSecs(u8_t TimNum) {
 void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 	const char * pcTag;
 	char caTmp[12];
-	for (int Type = 0; Type < stMAX_TYPE; ++Type) {
-		u32_t Mask = 0x00000001;
-		int HdrDone = 0;
-		for (int Num = 0; Num < stMAX_NUM; Mask <<= 1, ++Num) {
+	for (int Type = stTICKS; Type < stMAX_TYPE; ++Type) {			// order tabled output by type
+		u32_t Mask = 0x00000001;									// start with lowest timer number
+		int HdrDone = 0;											// Ensure header output per type
+		for (int Num = 0; Num < stMAX_NUM; Mask <<= 1, ++Num) {		// loop through all timers
 			systimer_t * pST = &STdata[Num];
-			if ((TimerMask & Mask) && (Type == GetTT(Num)) && pST->Count) {
-				if (HdrDone == 0) {
-					xReport(psR, stHDR_FMT1, xpfSGR(0,0,colourFG_CYAN,0),
-						(Type == stMILLIS) ? stHDR_TICKS :
+			if ((TimerMask & Mask) && (Type == xSysTimerGetType(Num)) && pST->Count) {	// check timer, type & count
+				if (HdrDone == 0) {										// if header not done for this type
+					xReport(psR, stHDR_FMT1, xpfCOL(colourFG_CYAN,0),	// report type specific header
+						(Type == stTICKS) ? stHDR_MILLIS :
 						(Type == stMICROS) ? stHDR_MICROS : stHDR_CLOCKS,
-						xpfSGR(0,0,attrRESET,0));
+						xpfCOL(attrRESET,0));
 				#ifndef CONFIG_FREERTOS_UNICORE
-					if (Type == stCLOCKS)
+					if (Type == stCLOCKS)				// add CLOCK specific header info
 						xReport(psR, stHDR_FMT2);
 				#endif
-					xReport(psR, strNL);
-					HdrDone = 1;
+					xReport(psR, strNL);				// termimate header
+					HdrDone = 1;						// mark as being done
 				}
-				if (halMemoryANY((void *)pST->Tag)) {
-					pcTag = pST->Tag;
-				} else {
+				if (halMemoryANY((void *)pST->Tag)) {	// if tag provided
+					pcTag = pST->Tag;					// use it
+				} else {								// else fabricate a tab
 					snprintfx(caTmp, sizeof(caTmp), "T#%d+%d", pST->Tag, Num - (int)pST->Tag);
-					pcTag = caTmp;
+					pcTag = caTmp;						// use fabricated tab
 				}
 				xReport(psR, stDTL_FMT1, Num, (STstat & (1UL << Num)) ? 'R' : ' ', pcTag, pST->Count);
 				xReport(psR, stDTL_FMT2, pST->Last, pST->Min, pST->Max,(u32_t) (pST->Count ? (pST->Sum / pST->Count) : pST->Sum), pST->Sum);
 				#ifndef CONFIG_FREERTOS_UNICORE
-					if (Type == stCLOCKS)
+					if (Type == stCLOCKS)				// add CLOCK specific details
 						xReport(psR, "%#'7lu|", pST->Skip);
 				#endif
-				#if	(systimerSCATTER > 2)
+				#if	(systimerSCATTER > 2)	// add scatter info
 					u32_t Rlo, Rhi;
 					for (int Idx = 0; Idx < systimerSCATTER; ++Idx) {
 						if (pST->Group[Idx]) {

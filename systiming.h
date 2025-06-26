@@ -29,7 +29,7 @@ extern "C" {
 
 // ################################# Process timer support #########################################
 
-enum { stMILLIS, stMICROS, stCLOCKS, stMAX_TYPE };
+enum { stUNDEF, stTICKS, stMICROS, stCLOCKS, stMAX_TYPE };
 
 enum {
 // ################# SYSTEM TASKS ########################
