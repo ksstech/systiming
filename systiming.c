@@ -202,26 +202,28 @@ u64_t xSysTimerGetElapsedClocks(u8_t TimNum) {
 }
 
 u64_t xSysTimerGetElapsedMicros(u8_t TimNum) {
-	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && GetTT(TimNum) > stMILLIS);
-	return (GetTT(TimNum) == stMICROS) ? STdata[TimNum].Sum : CLOCKS2US(STdata[TimNum].Sum, u64_t);
+	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && xSysTimerGetType(TimNum) > stTICKS);
+	u64_t tElap = STdata[TimNum].Sum;
+	tElap = xSysTimerGetType(TimNum) == stMICROS ? tElap : u64ClocksToUSec(tElap);
+	return tElap;
 }
 
 u64_t xSysTimerGetElapsedMillis(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
 	int Type = xSysTimerGetType(TimNum);
 	IF_myASSERT(debugPARAM, Type < stMAX_TYPE);
-	return (Type == stMILLIS) ? TICK2MS(STdata[TimNum].Sum, u64_t)
-		 : (Type == stMICROS) ? MICRO2MS(STdata[TimNum].Sum, u64_t)
-		 : CLOCK2MS(STdata[TimNum].Sum, u64_t);
+	u64_t tElap = STdata[TimNum].Sum;
+	tElap = Type==stTICKS ? u64TicksToMSec(tElap) : Type==stMICROS ? u64USecToMSec(tElap): u64ClocksToMSec(tElap);
+	return tElap;
 }
 
 u64_t xSysTimerGetElapsedSecs(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
 	int Type = xSysTimerGetType(TimNum);
 	IF_myASSERT(debugPARAM, Type < stMAX_TYPE);
-	return (Type == stMILLIS) ? TICK2SEC(STdata[TimNum].Sum, u64_t)
-		 : (Type == stMICROS) ? MICRO2SEC(STdata[TimNum].Sum, u64_t)
-		 : CLOCK2SEC(STdata[TimNum].Sum, u64_t);
+	u64_t tElap = STdata[TimNum].Sum;
+	tElap =  Type==stTICKS ? u64TicksToSec(tElap) : Type==stMICROS ? u64USecToMSec(tElap) : u64ClocksToSec(tElap);
+	return tElap;
 }
 
 #define	stHDR_TICKS		" mS|Min mS |Max mS |Avg mS |Sum mS |"
