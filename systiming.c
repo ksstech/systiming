@@ -59,14 +59,6 @@ static void vSysTimerResetCounter(u8_t TimNum) {
 	#endif
 }
 
-void vSysTimerResetCountersMask(u32_t TimerMask) {
-	u32_t mask = 0x00000001;
-	systimer_t *pST	= STdata;
-	for (u8_t TimNum = 0; TimNum < stMAX_NUM; ++TimNum, ++pST) {
-		if (TimerMask & mask) vSysTimerResetCounters(TimNum);
-		mask <<= 1;
-	}
-}
 
 void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM && INRANGE(stTICKS, Type, stCLOCKS));
@@ -163,6 +155,16 @@ u32_t xSysTimerStop(u8_t TimNum) {
 u32_t xSysTimerToggle(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
 	return (STstat & (1 << TimNum)) ? xSysTimerStop(TimNum) : xSysTimerStart(TimNum);
+}
+
+void vSysTimerResetCountersMask(u32_t TimerMask) {
+	u32_t mask = 0x00000001;
+	systimer_t *pST	= STdata;
+	for (u8_t TimNum = 0; TimNum < stMAX_NUM; ++TimNum, ++pST) {
+		if (TimerMask & mask)
+			vSysTimerResetCounter(TimNum);
+		mask <<= 1;
+	}
 }
 
 u32_t xSysTimerIsRunning(u8_t TimNum) {
