@@ -59,6 +59,7 @@ static void vSysTimerResetCounter(u8_t TimNum) {
 	#endif
 }
 
+// ################################### Public Control APIs #########################################
 
 void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM && INRANGE(stTICKS, Type, stCLOCKS));
@@ -167,6 +168,8 @@ void vSysTimerResetCountersMask(u32_t TimerMask) {
 	}
 }
 
+// ################################### Public Status APIs ##########################################
+
 u32_t xSysTimerIsRunning(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
 	u32_t tNow = 0;
@@ -193,6 +196,8 @@ int	xSysTimerGetStatus(u8_t TimNum, systimer_t * pST) {
 	memcpy(pST, &STdata[TimNum], sizeof(systimer_t));
 	return xSysTimerGetType(TimNum);
 }
+
+// #################################### Elapsed time APIs ##########################################
 
 u64_t xSysTimerGetElapsedClocks(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && xSysTimerGetType(TimNum) > stMICROS);
