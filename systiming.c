@@ -130,9 +130,6 @@ u32_t xSysTimerStop(u8_t TimNum) {
 	if (pST->Max < tElap)
 		pST->Max = tElap;								// and/or new maximum
 	#if	(systimerSCATTER > 2)
-	++pST->Group[Idx];
-	IF_PX(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER-1), "l=%lu h=%lu n=%lu i=%d" strNL,
-			pST->SGmin, pST->SGmax, tElap, Idx);
 		int Idx;
 		if (tElap <= pST->SGmin) {							// LE minimum ?
 			Idx = 0;										// first bucket
@@ -142,6 +139,11 @@ u32_t xSysTimerStop(u8_t TimNum) {
 			u32_t tBlock = (pST->SGmax - pST->SGmin) / (systimerSCATTER - 2);
 			u32_t tDiff = tElap - pST->SGmin;
 			Idx = 1 + (tDiff/tBlock);						// calculate bucket number/index
+		}
+		if (INRANGE(0, Idx, systimerSCATTER-1))	{
+			++pST->Group[Idx];								// update bucket count
+		} else {
+			SL_CRIT("l=%lu h=%lu n=%lu i=%d", pST->SGmin, pST->SGmax, tElap, Idx);
 		}
 		IF_myASSERT(debugRESULT, INRANGE(0, Idx, systimerSCATTER-1));
 	#endif
