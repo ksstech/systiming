@@ -272,13 +272,13 @@ i64_t i64TaskDelayUsec(u32_t u32Period);
  * @brief	delay (not yielding) program execution for a specified number of uSecs
  * @param	Number of uSecs to delay
  */
-u32_t xClockDelayUsec(u32_t uSec);
+void vClockDelayUsec(u32_t uSec);
 
 /**
  * @brief	delay (not yielding) program execution for a specified number of mSecs
  * @param	Number of mSecs to delay
  */
-u32_t xClockDelayMsec(u32_t mSec);
+void vClockDelayMsec(u32_t mSec);
 
 // ##################################### functional tests ##########################################
 

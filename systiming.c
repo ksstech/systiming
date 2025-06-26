@@ -69,7 +69,7 @@ void vSysTimerResetCountersMask(u32_t TimerMask) {
 }
 
 void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...) {
-	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && (Type < stMAX_TYPE));
+	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM && INRANGE(stTICKS, Type, stCLOCKS));
 	systimer_t *pST	= &STdata[TimNum];
 	pST->Tag = Tag;
 	vSysTimerSetType(TimNum, Type);
