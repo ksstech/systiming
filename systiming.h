@@ -19,6 +19,7 @@ extern "C" {
 #else
 	#define	IF_SYSTIMER_INIT(T,n,t,tag, ...)	if (T && ((n) < 31)) vSysTimerInit(n,t,tag)
 #endif
+#define	IF_SYSTIMER_DEINIT(T,n)					if (T && ((n) < 31)) xSysTimerDeInit(n)
 #define	IF_SYSTIMER_START(T,n)					if (T && ((n) < 31)) xSysTimerStart(n)
 #define	IF_SYSTIMER_STOP(T,n)					if (T && ((n) < 31)) xSysTimerStop(n)
 #define	IF_SYSTIMER_TOGGLE(T,n)					if (T && ((n) < 31)) xSysTimerToggle(n)
