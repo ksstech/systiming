@@ -73,7 +73,6 @@ void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...) {
     	// Assume default type is stMICROS so values in uSec
 		pST->SGmin	= va_arg(vaList, u32_t);
 		pST->SGmax	= va_arg(vaList, u32_t);
-		IF_myASSERT(debugPARAM, pST->SGmin < pST->SGmax);
 		// if stMILLIS handle uSec to Ticks conversion
 		if (Type == stMILLIS) {
 			#if (CONFIG_FREERTOS_HZ < MILLIS_IN_SECOND)
@@ -85,6 +84,7 @@ void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...) {
 			#endif
 		}
 		va_end(vaList);
+		IF_myASSERT(debugPARAM, pST->SGmin < pST->SGmax);
 	#endif
 }
 
