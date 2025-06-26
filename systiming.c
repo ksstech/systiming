@@ -95,6 +95,14 @@ void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...) {
 	#endif
 }
 
+void vSysTimerDeInit(u8_t TimNum) {
+	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
+	systimer_t *pST	= &STdata[TimNum];
+	pST->Tag = NULL;
+	vSysTimerSetType(TimNum, stUNDEF);
+	vSysTimerResetCounter(TimNum);
+}
+
 u32_t xSysTimerStart(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
 	int Type = xSysTimerGetType(TimNum);

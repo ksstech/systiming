@@ -195,6 +195,8 @@ DUMB_STATIC_ASSERT(sizeof(systimer_t) == 24 + sizeof(char *) + stSCATTER_OVERHEA
 
 void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...);
 
+void vSysTimerDeInit(u8_t TimNum);
+
 /**
  * @brief	start the specified timer
  * @param 	TimNum
