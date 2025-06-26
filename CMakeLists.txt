@@ -3,7 +3,7 @@
 set( srcs "systiming.c" )
 set( include_dirs "." )
 set( priv_include_dirs )
-set( requires "main" )
+set( requires "hal_esp32" )
 set( priv_requires )
 
 idf_component_register(
