@@ -24,11 +24,9 @@
 
 // ########################################## Macros ###############################################
 
-#define	SetTT(i,x)					maskSET2B(STtype,i,x,u64_t)
-#define	GetTT(i)					maskGET2B(STtype,i,u64_t)
-#define GetTimer(t) ((t == stCLOCKS) ? xthal_get_ccount() : \
-					(t == stMICROS) ? esp_timer_get_time() : \
-					xTaskGetTickCount())
+#define	vSysTimerSetType(i,x)		maskSET2B(STtype,i,x,u64_t)
+#define	xSysTimerGetType(i)			maskGET2B(STtype,i,u64_t)
+#define xSysTimerGetTime(t)	(t==stCLOCKS ? xthal_get_ccount() : t==stMICROS ? esp_timer_get_time() : xTaskGetTickCount())
 
 // #################################### Local static variables #####################################
 
@@ -75,7 +73,7 @@ void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...) {
 	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && (Type < stMAX_TYPE));
 	systimer_t *pST	= &STdata[TimNum];
 	pST->Tag = Tag;
-	SetTT(TimNum, Type);
+	vSysTimerSetType(TimNum, Type);
 	vSysTimerResetCounter(TimNum);
 	#if	(systimerSCATTER > 2)
     	va_list vaList;
@@ -100,8 +98,7 @@ void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...) {
 
 u32_t xSysTimerStart(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
-	int Type = GetTT(TimNum);
-	IF_myASSERT(debugPARAM, Type < stMAX_TYPE);
+	int Type = xSysTimerGetType(TimNum);
 	#ifndef CONFIG_FREERTOS_UNICORE
 	if (Type == stCLOCKS) {
 		if (xPortGetCoreID()) STcore |= (1UL<<TimNum);	// Running on Core 1
@@ -110,17 +107,15 @@ u32_t xSysTimerStart(u8_t TimNum) {
 	#endif
 	STstat |= (1UL << TimNum);							// Mark as started & running
 	++STdata[TimNum].Count;
-	return STdata[TimNum].Last = GetTimer(Type);
+	return STdata[TimNum].Last = xSysTimerGetTime(Type);
 }
 
 u32_t xSysTimerStop(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
-	int Type = GetTT(TimNum);
-	IF_myASSERT(debugPARAM, Type < stMAX_TYPE);
-	u32_t tNow	= GetTimer(Type);
-	STstat &= ~(1UL << TimNum);
+	int Type = xSysTimerGetType(TimNum);
+	u32_t tNow = xSysTimerGetTime(Type);				// capture stop time as early as possible
+	STstat &= ~(1UL << TimNum);							//  mark timer as stopped
 	systimer_t *pST	= &STdata[TimNum];
-
 	#ifndef CONFIG_FREERTOS_UNICORE
 	/* Adjustments made to CCOUNT cause discrepancies between readings from different cores.
 	 * In order to filter out invalid/OOR values we verify whether the timer is being stopped
@@ -167,9 +162,9 @@ u32_t xSysTimerIsRunning(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
 	u32_t tNow = 0;
 	if (STstat & (1 << TimNum)) {
-		int Type = GetTT(TimNum);
+		int Type = xSysTimerGetType(TimNum);
 		IF_myASSERT(debugPARAM, Type < stMAX_TYPE);
-		tNow	= GetTimer(Type);
+		tNow = xSysTimerGetTime(Type);
 		systimer_t * pST = &STdata[TimNum];
 		if (Type == stCLOCKS) {
 			if (tNow > pST->Last) {
@@ -187,11 +182,11 @@ u32_t xSysTimerIsRunning(u8_t TimNum) {
 int	xSysTimerGetStatus(u8_t TimNum, systimer_t * pST) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM && halMemorySRAM((void*) pST));
 	memcpy(pST, &STdata[TimNum], sizeof(systimer_t));
-	return GetTT(TimNum);
+	return xSysTimerGetType(TimNum);
 }
 
 u64_t xSysTimerGetElapsedClocks(u8_t TimNum) {
-	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && GetTT(TimNum) > stMICROS);
+	IF_myASSERT(debugPARAM, (TimNum < stMAX_NUM) && xSysTimerGetType(TimNum) > stMICROS);
 	return STdata[TimNum].Sum;
 }
 
@@ -202,7 +197,7 @@ u64_t xSysTimerGetElapsedMicros(u8_t TimNum) {
 
 u64_t xSysTimerGetElapsedMillis(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
-	int Type = GetTT(TimNum);
+	int Type = xSysTimerGetType(TimNum);
 	IF_myASSERT(debugPARAM, Type < stMAX_TYPE);
 	return (Type == stMILLIS) ? TICK2MS(STdata[TimNum].Sum, u64_t)
 		 : (Type == stMICROS) ? MICRO2MS(STdata[TimNum].Sum, u64_t)
@@ -211,7 +206,7 @@ u64_t xSysTimerGetElapsedMillis(u8_t TimNum) {
 
 u64_t xSysTimerGetElapsedSecs(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
-	int Type = GetTT(TimNum);
+	int Type = xSysTimerGetType(TimNum);
 	IF_myASSERT(debugPARAM, Type < stMAX_TYPE);
 	return (Type == stMILLIS) ? TICK2SEC(STdata[TimNum].Sum, u64_t)
 		 : (Type == stMICROS) ? MICRO2SEC(STdata[TimNum].Sum, u64_t)
