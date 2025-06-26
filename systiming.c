@@ -1,7 +1,5 @@
 // systiming.c - Copyright (c) 2014-24 Andre M. Maree / KSS Technologies (Pty) Ltd.
 
-#include <string.h>
-
 #include "systiming.h"
 #include "hal_memory.h"
 #include "struct_union.h"
@@ -10,6 +8,11 @@
 
 #include "xtensa/hal.h"
 #include "esp_timer.h"
+#ifdef ESP_PLATFORM
+	#include <rom/ets_sys.h>
+#endif
+
+#include <string.h>
 
 #define	debugFLAG					0xF000
 #define	debugINIT					(debugFLAG & 0x0001)
@@ -29,16 +32,24 @@
 
 // #################################### Local static variables #####################################
 
-static systimer_t	STdata[stMAX_NUM] = { 0 };
-static u32_t STstat = 0;								// 1 = Running
-static u64_t STtype = 0;
+static systimer_t STdata[stMAX_NUM] = { 0 };
+static u32_t STstat = 0;								// status 1=Running
+static u64_t STtype = 0;								// type 0=stUNDEF
 
 #ifndef CONFIG_FREERTOS_UNICORE
 	static u32_t STcore = 0;							// Core# 0/1
 #endif
 
-void vSysTimerResetCounter(u8_t TimNum) {
 	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
+// ###################################### Private APIs #############################################
+
+/**
+ * @brief	Reset all the timer values for a single timer #
+ * @brief 	This function does NOT reset SGmin & SGmax. To reset Min/Max use vSysTimerInit()
+ * @brief	which allows for the type to be changed as well as specifying new Min/Max values.
+ * @param 	TimNum
+ */
+static void vSysTimerResetCounter(u8_t TimNum) {
 	systimer_t *pST	= &STdata[TimNum];
 	STstat		&= ~(1UL << TimNum);					// clear active status ie STOP
 	pST->Sum	= 0ULL;
@@ -47,7 +58,7 @@ void vSysTimerResetCounter(u8_t TimNum) {
 	pST->Max	= 0;
 	pST->Min	= 0xFFFFFFFF;
 	#if	(systimerSCATTER > 2)
-	memset(&pST->Group, 0, SO_MEM(systimer_t, Group));
+		memset(&pST->Group, 0, SO_MEM(systimer_t, Group));
 	#endif
 }
 
@@ -120,21 +131,29 @@ u32_t xSysTimerStop(u8_t TimNum) {
 		return 0;
 	}
 	#endif
-	u32_t tElap = tNow - pST->Last;
-	pST->Sum += tElap;
-	pST->Last = tElap;
+	u32_t tElap = tNow - pST->Last;						// cal culate elapsed time
+	pST->Sum += tElap;									// update sum of all times
+	pST->Last = tElap;									// and save as previous/last time
 	// update Min & Max if required
-	if (pST->Min > tElap) pST->Min = tElap;
-	if (pST->Max < tElap) pST->Max = tElap;
+	if (pST->Min > tElap)								// if required
+		pST->Min = tElap;								// update new minimum
+	if (pST->Max < tElap)
+		pST->Max = tElap;								// and/or new maximum
 	#if	(systimerSCATTER > 2)
-	int Idx;
-	if (tElap <= pST->SGmin)		Idx = 0;
-	else if (tElap >= pST->SGmax)	Idx = systimerSCATTER-1;
-	else 							Idx = 1 + ((tElap-pST->SGmin)*(systimerSCATTER-2)) / (pST->SGmax-pST->SGmin);
 	++pST->Group[Idx];
 	IF_PX(debugRESULT && OUTSIDE(0, Idx, systimerSCATTER-1), "l=%lu h=%lu n=%lu i=%d" strNL,
 			pST->SGmin, pST->SGmax, tElap, Idx);
-	IF_myASSERT(debugRESULT, INRANGE(0, Idx, systimerSCATTER-1));
+		int Idx;
+		if (tElap <= pST->SGmin) {							// LE minimum ?
+			Idx = 0;										// first bucket
+		} else if (tElap >= pST->SGmax) {					// GE maximum ?	
+			Idx = systimerSCATTER-1;						// last bucket
+		} else {											// anything inbetween
+			u32_t tBlock = (pST->SGmax - pST->SGmin) / (systimerSCATTER - 2);
+			u32_t tDiff = tElap - pST->SGmin;
+			Idx = 1 + (tDiff/tBlock);						// calculate bucket number/index
+		}
+		IF_myASSERT(debugRESULT, INRANGE(0, Idx, systimerSCATTER-1));
 	#endif
 	return tElap;
 }
@@ -153,8 +172,11 @@ u32_t xSysTimerIsRunning(u8_t TimNum) {
 		tNow	= GetTimer(Type);
 		systimer_t * pST = &STdata[TimNum];
 		if (Type == stCLOCKS) {
-			if (tNow > pST->Last) tNow -= pST->Last;	// Unlikely wrapped
-			else tNow += (0xFFFFFFFF - pST->Last);		// definitely wrapped
+			if (tNow > pST->Last) {
+				tNow -= pST->Last;						// Unlikely wrapped
+			} else { 
+				tNow += (0xFFFFFFFF - pST->Last);		// definitely wrapped
+			}
 		} else {
 			tNow -= pST->Last;
 		}
