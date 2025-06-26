@@ -333,30 +333,66 @@ void vSysTimingTestSet(u32_t Type, char * Tag, u32_t Delay) {
 }
 
 void vSysTimingTest(void) {
-	#if	(systimerTEST_DELAY == 1)						// Test the uSec delays
-	u32_t	uClock, uSecs;
-	uClock	= xthal_get_ccount();
-	uSecs	= xClockDelayUsec(100);
-	PX("Delay=%'lu uS" strNL, (uSecs - uClock) / configCLOCKS_PER_USEC);
+#if	(systimerTEST_DELAY)								/* Test the uSec delays */
+	u32_t uClock, uSecs;
+	uClock = xthal_get_ccount();
+	vClockDelayUsec(100);
+	uSecs = xthal_get_ccount();
+	xReport(NULL, "Delay=%'lu uS" strNL, (uSecs - uClock) / configCLOCKS_PER_USEC);
 
-	uClock	= xthal_get_ccount();
-	uSecs	= xClockDelayUsec(1000);
-	PX("Delay=%'lu uS" strNL, (uSecs - uClock) / configCLOCKS_PER_USEC);
+	vTaskDelay(systimerINTERVAL);
+	uClock = xthal_get_ccount();
+	vClockDelayUsec(1000);
+	uSecs = xthal_get_ccount();
+	xReport(NULL, "Delay=%'lu uS" strNL, (uSecs - uClock) / configCLOCKS_PER_USEC);
 
-	uClock	= xthal_get_ccount();
-	uSecs	= xClockDelayUsec(10000);
-	PX("Delay=%'lu uS" strNL, (uSecs - uClock) / configCLOCKS_PER_USEC);
-	#endif
-	#if (systimerTEST_TICKS == 1)						// Test TICK timers & Scatter groups
-	vSysTimingTestSet(stMILLIS, "TICKS", 1);
-	vSysTimingTestSet(stMILLIS, "TICKS", 10);
-	vSysTimingTestSet(stMILLIS, "TICKS", 100);
-	vSysTimingTestSet(stMILLIS, "TICKS", 1000);
-	#endif
-	#if (stTEST_CLOCKS == 1)						// Test CLOCK timers & Scatter groups
-	vSysTimingTestSet(stCLOCKS, "CLOCKS", 1);
-	vSysTimingTestSet(stCLOCKS, "CLOCKS", 10);
-	vSysTimingTestSet(stCLOCKS, "CLOCKS", 100);
-	vSysTimingTestSet(stCLOCKS, "CLOCKS", 1000);
-	#endif
+	vTaskDelay(systimerINTERVAL);
+	uClock = xthal_get_ccount();
+	vClockDelayUsec(10000);
+	uSecs = xthal_get_ccount();
+	xReport(NULL, "Delay=%'lu uS" strNL, (uSecs - uClock) / configCLOCKS_PER_USEC);
+#endif
+
+#if (systimerTEST_MILLIS)								/* Test MILLIS timers & Scatter groups */
+	vSysTimingTestSet(stTICKS, "MILLIS", 5);
+	vSysTimingTestSet(stTICKS, "MILLIS", 25);
+	vSysTimingTestSet(stTICKS, "MILLIS", 125);
+#endif
+
+#if (systimerTEST_MICROS)								/* Test MICROS timers & Scatter groups */
+	vSysTimingTestSet(stMICROS, "MICROS", 100);
+	vSysTimingTestSet(stMICROS, "MICROS", 1000);
+	vSysTimingTestSet(stMICROS, "MICROS", 10000);
+	vSysTimingTestSet(stMICROS, "MICROS", 100000);
+#endif
+
+#if (systimerTEST_CLOCKS)								/* Test CLOCKS timers & Scatter groups */
+	vSysTimingTestSet(stCLOCKS, "CLOCKS", configCLOCKS_PER_USEC * 100);
+	vSysTimingTestSet(stCLOCKS, "CLOCKS", configCLOCKS_PER_USEC * 1000);
+	vSysTimingTestSet(stCLOCKS, "CLOCKS", configCLOCKS_PER_USEC * 10000);
+	vSysTimingTestSet(stCLOCKS, "CLOCKS", configCLOCKS_PER_USEC * 100000);
+#endif
+
+#if (systimerTEST_MACROS)
+	PX("Clocks -> Ticks:  Hz=%lu" strNL, CONFIG_FREERTOS_HZ);
+	PX("\tIn=%lu  Out=%lu" strNL, 1600000, u32ClocksToTicks(1600000));
+	PX("\tIn=%lu  Out=%lu" strNL, 160000000, u32ClocksToTicks(160000000));
+	PX("\tIn=%lu  Out=%lu" strNL, 4200000000UL, u32ClocksToTicks(4200000000));
+	// works up to 4200000000UL, UL MUST be specified
+	PX("uSec -> Ticks:  Hz=%lu" strNL, CONFIG_FREERTOS_HZ);
+	PX("\tIn=%lu  Out=%lu" strNL, 10000, u32USecToTicks(10000));
+	PX("\tIn=%lu  Out=%lu" strNL, 1000000, u32USecToTicks(1000000));
+	PX("\tIn=%lu  Out=%lu" strNL, 420000000, u32USecToTicks(420000000));
+	// works up to 420000000 @ 100Hz
+	PX("mSec -> Ticks:  Hz=%lu" strNL, CONFIG_FREERTOS_HZ);
+	PX("\tIn=%lu  Out=%lu" strNL, 1000, u32MSecToTicks(1000));
+	PX("\tIn=%lu  Out=%lu" strNL, 100000, u32MSecToTicks(100000));
+	PX("\tIn=%lu  Out=%lu" strNL, 42000000, u32MSecToTicks(42000000));
+	// works up to 42000000 @ 100Hz, 
+	PX("Sec -> Ticks:  Hz=%lu" strNL, CONFIG_FREERTOS_HZ);
+	PX("\tIn=%lu  Out=%lu" strNL, 10, u32SecToTicks(10));
+	PX("\tIn=%lu  Out=%lu" strNL, 10000, u32SecToTicks(10000));
+	PX("\tIn=%lu  Out=%lu" strNL, 4200000, u32SecToTicks(4200000));
+	// works up to 42000000 @ 100Hz, 4200000 @ 1000Hz, 420000 @ 10000Hz 
+#endif
 }
