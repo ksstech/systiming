@@ -328,20 +328,31 @@ void vClockDelayMsec(u32_t mSec) {
 
 // ##################################### functional tests ##########################################
 
-#define	systimerTEST_DELAY			1
-#define	systimerTEST_TICKS			1
-#define	systimerTEST_CLOCKS			1
+#define	systimerTEST_DELAY			(systimerTESTFLAG & 0x0001)
+#define	systimerTEST_MILLIS			(systimerTESTFLAG & 0x0002)
+#define	systimerTEST_MICROS			(systimerTESTFLAG & 0x0004)
+#define	systimerTEST_CLOCKS			(systimerTESTFLAG & 0x0008)
+#define	systimerTEST_MACROS			(systimerTESTFLAG & 0x0010)
+#define systimerTESTFLAG			0x0010
+#define	systimerINTERVAL			1000
 
-void vSysTimingTestSet(u32_t Type, char * Tag, u32_t Delay) {
-	for (u8_t Idx = 0; Idx < stMAX_NUM; ++Idx)
-		vSysTimerInit(Idx, Type, Tag, myMS_TO_TICKS(Delay), myMS_TO_TICKS(Delay * systimerSCATTER));
-	for (u32_t Steps = 0; Steps <= systimerSCATTER; ++Steps) {
-		for (u32_t Count = 0; Count < stMAX_NUM; xSysTimerStart(Count++));
-		vTaskDelay(pdMS_TO_TICKS((Delay * Steps) + 1));
-		for (u32_t Count = 0; Count < stMAX_NUM; xSysTimerStop(Count++));
+#if	(systimerTESTFLAG & 0x000E)
+static void vSysTimingTestSet(u32_t Type, char * Tag, u32_t Delay) {
+	// Adjust Delay for different units
+	xReport(NULL, "Delay %lu", Delay);
+	Delay = (Type == stTICKS) ? (Delay * 1000) : (Type == stMICROS) ? Delay : (Delay / configCLOCKS_PER_USEC);
+	xReport(NULL, "-> %lu" strNL, Delay);
+	vSysTimerInit(0, Type, Tag, Delay, Delay * systimerSCATTER);
+	for (int SI = 0; SI < systimerSCATTER; ++SI) {
+		xSysTimerStart(0);
+		vClockDelayUsec(Delay * (SI + 1));
+		xSysTimerStop(0);
 	}
-	vSysTimerShow(NULL, 0xFFFFFFFF);
+	vSysTimerShow(NULL, 1);
+	vSysTimerDeInit(0);
+	vTaskDelay(pdMS_TO_TICKS(100));
 }
+#endif
 
 void vSysTimingTest(void) {
 #if	(systimerTEST_DELAY)								/* Test the uSec delays */
