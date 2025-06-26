@@ -11,21 +11,18 @@ extern "C" {
 
 // #################################################################################################
 
-#define	systimerSCATTER				10			// >2 to enable scatter support
-
+// Allows both versions of macro to take scatter parameters (avoiding errors)
+// but discard values passed unless systimerSCATTER > 2 to enable scatter support
+#define	systimerSCATTER							10
 #if	(systimerSCATTER > 2)
 	#define	IF_SYSTIMER_INIT(T,n,t,tag, ...)	if (T && ((n) < 31)) vSysTimerInit(n,t,tag,##__VA_ARGS__)
 #else
-	// Allows macro to take scatter parameters (hence avoid errors if used in macro definition)
-	// but discard values passed
 	#define	IF_SYSTIMER_INIT(T,n,t,tag, ...)	if (T && ((n) < 31)) vSysTimerInit(n,t,tag)
 #endif
-
 #define	IF_SYSTIMER_START(T,n)					if (T && ((n) < 31)) xSysTimerStart(n)
 #define	IF_SYSTIMER_STOP(T,n)					if (T && ((n) < 31)) xSysTimerStop(n)
 #define	IF_SYSTIMER_TOGGLE(T,n)					if (T && ((n) < 31)) xSysTimerToggle(n)
 #define	IF_SYSTIMER_RESET(T,n)					if (T && ((n) < 31)) xSysTimerReset(n)
-
 #define	IF_SYSTIMER_SHOW(T,n)					if (T && ((n) < 31)) vSysTimerShow(NULL, n)
 #define	IF_SYSTIMER_SHOW_NUM(T,n)				if (T && ((n) < 31)) vSysTimerShow(NULL, 1 << (n))
 
@@ -193,23 +190,8 @@ typedef struct __attribute__((packed)) {
 DUMB_STATIC_ASSERT(sizeof(systimer_t) == 24 + sizeof(char *) + stSCATTER_OVERHEAD + stDUALCORE_OVERHEAD);
 
 // ######################################### Public variables ######################################
-// ######################################### Public functions ######################################
 
-/**
- * @brief	Reset all the timer values for a single timer #
- * @brief 	This function does NOT reset SGmin & SGmax. To reset Min/Max use vSysTimerInit()
- * @brief	which allows for the type to be changed as well as specifying new Min/Max values.
- * @param 	TimNum
- */
-void vSysTimerResetCounters(u8_t TimNum);
-
-/**
- * @brief	Reset all the timer values for 1 or more timers
- * @brief 	This function does NOT reset SGmin & SGmax. To reset Min/Max use vSysTimerInit()
- * @brief	which allows for the type to be changed as well as specifying new Min/Max values.
- * @param	TimerMask
- */
-void vSysTimerResetCountersMask(u32_t TimerMask);
+// ################################### Public Control APIs #########################################
 
 void vSysTimerInit(u8_t TimNum, int Type, const char * Tag, ...);
 
@@ -230,6 +212,16 @@ u32_t xSysTimerStop(u8_t TimNum);
 u32_t xSysTimerToggle(u8_t TimNum);
 
 /**
+ * @brief	Reset all the timer values for 1 or more timers
+ * @brief 	This function does NOT reset SGmin & SGmax. To reset Min/Max use vSysTimerInit()
+ * @brief	which allows for the type to be changed as well as specifying new Min/Max values.
+ * @param	TimerMask
+ */
+void vSysTimerResetCountersMask(u32_t TimerMask);
+
+// ################################### Public Status APIs ##########################################
+
+/**
  * @brief	Check if timer is running
  * @param	TimNum
  * @return	0 if not running else current elapsed timer value based on type (CLOCKs or TICKSs)
@@ -237,17 +229,24 @@ u32_t xSysTimerToggle(u8_t TimNum);
 u32_t xSysTimerIsRunning(u8_t TimNum);
 
 /**
- * @brief	return the current timer values and type
- * @param	TimNum
- * @param	pST
- * @return	Type
+ * @brief	return the current timer configuration and status
+ * @param[in]	TimNum timer number
+ * @param[out]	pST pointer to structure to be filled
+ * @return		timer type
  */
 int	xSysTimerGetStatus(u8_t TimNum, systimer_t *);
 
+// #################################### Elapsed time APIs ##########################################
+
 u64_t xSysTimerGetElapsedClocks(u8_t TimNum);
+
 u64_t xSysTimerGetElapsedMicros(u8_t TimNum);
+
 u64_t xSysTimerGetElapsedMillis(u8_t TimNum);
+
 u64_t xSysTimerGetElapsedSecs(u8_t TimNum);
+
+// ################################## Timer status reporting #######################################
 
 struct report_t;
 /**
@@ -258,6 +257,8 @@ struct report_t;
  */
 void vSysTimerShow(struct report_t * psR, u32_t TimerMask);
 
+// ################################### RTOS + HW delay support #####################################
+
 /**
  * @brief	delay by yielding program execution for a specified number of uSecs
  * @param	u32Period of uSecs to delay
@@ -265,19 +266,21 @@ void vSysTimerShow(struct report_t * psR, u32_t TimerMask);
  */
 i64_t i64TaskDelayUsec(u32_t u32Period);
 
+// ################################## MCU Clock cycle delay support ################################
+
 /**
  * @brief	delay (not yielding) program execution for a specified number of uSecs
  * @param	Number of uSecs to delay
- * @return	Clock counter at the end
  */
 u32_t xClockDelayUsec(u32_t uSec);
 
 /**
  * @brief	delay (not yielding) program execution for a specified number of mSecs
  * @param	Number of mSecs to delay
- * @return	Clock counter at the end
  */
 u32_t xClockDelayMsec(u32_t mSec);
+
+// ##################################### functional tests ##########################################
 
 void vSysTimingTest(void);
 
