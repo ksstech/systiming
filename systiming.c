@@ -38,7 +38,6 @@ static u64_t STtype = 0;								// type 0=stUNDEF
 	static u32_t STcore = 0;							// Core# 0/1
 #endif
 
-	IF_myASSERT(debugPARAM, TimNum < stMAX_NUM);
 // ###################################### Private APIs #############################################
 
 /**
