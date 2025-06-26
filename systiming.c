@@ -101,8 +101,11 @@ u32_t xSysTimerStart(u8_t TimNum) {
 	int Type = xSysTimerGetType(TimNum);
 	#ifndef CONFIG_FREERTOS_UNICORE
 	if (Type == stCLOCKS) {
-		if (xPortGetCoreID()) STcore |= (1UL<<TimNum);	// Running on Core 1
-		else STcore &= ~(1UL << TimNum);				// Running on Core 0
+		if (xPortGetCoreID()) {
+			STcore |= (1UL<<TimNum);					// Running on Core 1
+		} else {
+			STcore &= ~(1UL << TimNum);					// Running on Core 0
+		}
 	}
 	#endif
 	STstat |= (1UL << TimNum);							// Mark as started & running
