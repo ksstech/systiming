@@ -298,16 +298,19 @@ i64_t i64TaskDelayUsec(u32_t u32Period) {
 
 // ################################## MCU Clock cycle delay support ################################
 
-u32_t xClockDelayUsec(u32_t uSec) {
+void vClockDelayUsec(u32_t uSec) {
+#ifdef ESP_PLATFORM
+	ets_delay_us(uSec);
+#else
 	IF_myASSERT(debugPARAM, uSec < (UINT32_MAX / configCLOCKS_PER_USEC));
-	u32_t ClockEnd	= GET_CLOCK_COUNTER() + halUS_TO_CLOCKS(uSec);
-	while ((ClockEnd - GET_CLOCK_COUNTER()) > configCLOCKS_PER_USEC );
-	return ClockEnd;
+	u32_t ClockEnd	= xthal_get_ccount() + (uSec * (u32_t)configCLOCKS_PER_USEC);
+	while ((ClockEnd - xthal_get_ccount()) > configCLOCKS_PER_USEC );
+#endif
 }
 
-u32_t xClockDelayMsec(u32_t mSec) {
+void vClockDelayMsec(u32_t mSec) {
 	IF_myASSERT(debugPARAM, mSec < (UINT32_MAX / configCLOCKS_PER_MSEC));
-	return xClockDelayUsec(mSec * MICROS_IN_MILLISEC);
+	vClockDelayUsec(mSec * MICROS_IN_MILLISEC);
 }
 
 // ##################################### functional tests ##########################################
