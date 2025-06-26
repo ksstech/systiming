@@ -123,10 +123,12 @@ u32_t xSysTimerStop(u8_t TimNum) {
 	/* Adjustments made to CCOUNT cause discrepancies between readings from different cores.
 	 * In order to filter out invalid/OOR values we verify whether the timer is being stopped
 	 * on the same MCU as it was started. If not, we ignore the timing values */
-	u8_t	xCoreID	= (STcore & (1UL << TimNum)) ? 1 : 0;
-	if ((Type == stCLOCKS) && xCoreID != xPortGetCoreID()) {
-		++pST->Skip;
-		return 0;
+	if (Type == stCLOCKS) {
+		int xCoreID = (STcore & (1UL << TimNum)) ? 1 : 0;
+		if (xCoreID != xPortGetCoreID()) {
+			++pST->Skip;
+			return 0;
+		}
 	}
 	#endif
 	u32_t tElap = tNow - pST->Last;						// cal culate elapsed time
