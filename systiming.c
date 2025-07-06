@@ -1,4 +1,4 @@
-// systiming.c - Copyright (c) 2014-24 Andre M. Maree / KSS Technologies (Pty) Ltd.
+// systiming.c - Copyright (c) 2014-25 Andre M. Maree / KSS Technologies (Pty) Ltd.
 
 #include "systiming.h"
 #include "hal_memory.h"
@@ -109,7 +109,7 @@ u32_t xSysTimerStop(u8_t TimNum) {
 	u32_t tNow = xSysTimerGetTime(Type);				// capture stop time as early as possible
 	STstat &= ~(1UL << TimNum);							//  mark timer as stopped
 	systimer_t *pST	= &STdata[TimNum];
-	#ifndef CONFIG_FREERTOS_UNICORE
+#ifndef CONFIG_FREERTOS_UNICORE
 	/* Adjustments made to CCOUNT cause discrepancies between readings from different cores.
 	 * In order to filter out invalid/OOR values we verify whether the timer is being stopped
 	 * on the same MCU as it was started. If not, we ignore the timing values */
@@ -120,7 +120,7 @@ u32_t xSysTimerStop(u8_t TimNum) {
 			return 0;
 		}
 	}
-	#endif
+#endif
 	u32_t tElap = tNow - pST->Last;						// cal culate elapsed time
 	pST->Sum += tElap;									// update sum of all times
 	pST->Last = tElap;									// and save as previous/last time
@@ -129,24 +129,24 @@ u32_t xSysTimerStop(u8_t TimNum) {
 		pST->Min = tElap;								// update new minimum
 	if (pST->Max < tElap)
 		pST->Max = tElap;								// and/or new maximum
-	#if	(systimerSCATTER > 2)
+#if	(systimerSCATTER > 2)
 		int Idx;
-		if (tElap <= pST->SGmin) {							// LE minimum ?
-			Idx = 0;										// first bucket
-		} else if (tElap >= pST->SGmax) {					// GE maximum ?	
-			Idx = systimerSCATTER-1;						// last bucket
-		} else {											// anything inbetween
+		if (tElap <= pST->SGmin) {						// LE minimum ?
+			Idx = 0;									// first bucket
+		} else if (tElap >= pST->SGmax) {				// GE maximum ?	
+			Idx = systimerSCATTER-1;					// last bucket
+		} else {										// anything inbetween
 			u32_t tBlock = (pST->SGmax - pST->SGmin) / (systimerSCATTER - 2);
 			u32_t tDiff = tElap - pST->SGmin;
-			Idx = 1 + (tDiff/tBlock);						// calculate bucket number/index
+			Idx = 1 + (tDiff/tBlock);					// calculate bucket number/index
 		}
 		if (INRANGE(0, Idx, systimerSCATTER-1))	{
-			++pST->Group[Idx];								// update bucket count
+			++pST->Group[Idx];							// update bucket count
 		} else {
 			SL_CRIT("l=%lu h=%lu n=%lu i=%d", pST->SGmin, pST->SGmax, tElap, Idx);
 		}
 		IF_myASSERT(debugRESULT, INRANGE(0, Idx, systimerSCATTER-1));
-	#endif
+#endif
 	return tElap;
 }
 
@@ -254,10 +254,10 @@ void vSysTimerShow(report_t * psR, u32_t TimerMask) {
 						(Type == stTICKS) ? stHDR_MILLIS :
 						(Type == stMICROS) ? stHDR_MICROS : stHDR_CLOCKS,
 						xpfCOL(attrRESET,0));
-				#ifndef CONFIG_FREERTOS_UNICORE
-					if (Type == stCLOCKS)				// add CLOCK specific header info
-						xReport(psR, stHDR_FMT2);
-				#endif
+					#ifndef CONFIG_FREERTOS_UNICORE
+						if (Type == stCLOCKS)				// add CLOCK specific header info
+							xReport(psR, stHDR_FMT2);
+					#endif
 					xReport(psR, strNL);				// termimate header
 					HdrDone = 1;						// mark as being done
 				}
