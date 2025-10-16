@@ -2,9 +2,6 @@
 
 #pragma once
 
-#include "hal_platform.h"
-#include "definitions.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
