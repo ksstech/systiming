@@ -32,8 +32,8 @@
 // #################################### Local static variables #####################################
 
 static systimer_t STdata[stMAX_NUM] = { 0 };
-static u32_t STstat = 0;								// status 1=Running
 static u64_t STtype = 0;								// type 0=stUNDEF
+static u32_t STstat = 0;								// status 1=Running
 
 #ifndef CONFIG_FREERTOS_UNICORE
 	static u32_t STcore = 0;							// Core# 0/1
@@ -110,10 +110,10 @@ u32_t xSysTimerStop(u8_t TimNum) {
 	u32_t tNow = xSysTimerGetTime(Type);				// capture stop time as early as possible
 	STstat &= ~(1UL << TimNum);							//  mark timer as stopped
 	systimer_t *pST	= &STdata[TimNum];
-#ifndef CONFIG_FREERTOS_UNICORE
 	/* Adjustments made to CCOUNT cause discrepancies between readings from different cores.
 	 * In order to filter out invalid/OOR values we verify whether the timer is being stopped
 	 * on the same MCU as it was started. If not, we ignore the timing values */
+	#ifndef CONFIG_FREERTOS_UNICORE
 	if (Type == stCLOCKS) {
 		int xCoreID = (STcore & (1UL << TimNum)) ? 1 : 0;
 		if (xCoreID != xPortGetCoreID()) {
@@ -121,7 +121,7 @@ u32_t xSysTimerStop(u8_t TimNum) {
 			return 0;
 		}
 	}
-#endif
+	#endif
 	u32_t tElap = tNow - pST->Last;						// cal culate elapsed time
 	pST->Sum += tElap;									// update sum of all times
 	pST->Last = tElap;									// and save as previous/last time
@@ -130,7 +130,7 @@ u32_t xSysTimerStop(u8_t TimNum) {
 		pST->Min = tElap;								// update new minimum
 	if (pST->Max < tElap)
 		pST->Max = tElap;								// and/or new maximum
-#if	(systimerSCATTER > 2)
+	#if	(systimerSCATTER > 2)
 		int Idx;
 		if (tElap <= pST->SGmin) {						// LE minimum ?
 			Idx = 0;									// first bucket
@@ -147,7 +147,7 @@ u32_t xSysTimerStop(u8_t TimNum) {
 			SL_CRIT("l=%lu h=%lu n=%lu i=%d", pST->SGmin, pST->SGmax, tElap, Idx);
 		}
 		IF_myASSERT(debugRESULT, INRANGE(0, Idx, systimerSCATTER-1));
-#endif
+	#endif
 	return tElap;
 }
 

@@ -111,7 +111,7 @@ enum {
 #endif
 // ####################### DEVICES #######################
 #if	(HAL_ADE7953 == 0)
-	stADE7953R=31,stADE7953W=31,
+	stADE7953R=31, stADE7953W=31,
 #endif
 #if	(HAL_PCA9555 == 0)
 	stPCA9555=31,
