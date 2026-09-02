@@ -68,6 +68,9 @@ enum {
 #if	(HAL_LTR329ALS > 0)
 	stLTR329ALS,
 #endif
+#if	(HAL_INA3221 > 0)
+	stINA3221R, stINA3221W,
+#endif
 #if	(HAL_M90E26 > 0)
 	stM90EX6R, stM90EX6W,
 #endif
