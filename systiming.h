@@ -71,7 +71,7 @@ enum {
 #if	(HAL_INA3221 > 0)
 	stINA3221R, stINA3221W,
 	#if (cmakeESPTESTJIG > 0)		// ina3221_acq.c: the raw-IDF acquisition task, jig only.
-	stINAacqR, stINAacqW, stINAacqS,	// one register read / one write / one complete sample
+	stINAacqR, stINAacqW, stINAacqS, stINAacqH,	// one register read / write / complete sample / handler call
 	#endif
 #endif
 #if	(HAL_M90E26 > 0)
